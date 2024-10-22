@@ -1,125 +1,34 @@
-import { VideoConference } from "@superviz/react-sdk";
-import "./App.css";
-import { SuperVizRoomProvider, useYjsProvider, YjsProvider } from "@superviz/react-sdk";
-import { sampleInfo } from "./projectInfo";
-import * as Y from "yjs";
-import { Editor } from "@monaco-editor/react";
-import { useEffect, useState } from "react";
-import { MonacoBinding } from "y-monaco";
+import { useState } from "react";
+import { Box } from "@chakra-ui/react";
+import UserInput from "./components/UserInput";
+import VideoRoom from "./components/VideoRoom";
+import CodeEditor from "./components/CodeEditor";
+import { SuperVizRoomProvider } from "@superviz/react-sdk";
 
 const DEVELOPER_API_KEY = import.meta.env.DEV
   ? import.meta.env.VITE_SUPERVIZ_DEVELOPER_KEY
   : import.meta.env.VITE_SUPERVIZ_PRODUCTION_KEY;
 
-const groupId = sampleInfo.id;
-const groupName = sampleInfo.name;
-// Sample participant ID (0-100)
-// const participant = Math.floor(Math.random() * 100)
-//   .toString()
-//   .padStart(3, "0");
-
-const ydoc = new Y.Doc();
-
-const style = document.createElement("style");
-style.id = "sv-yjs-monaco";
-document.head.appendChild(style);
-
-function EditorRoom() {
-  const { provider } = useYjsProvider();
-  const [editor, setEditor] = useState<any>(null);
-
-  useEffect(() => {
-    if (!provider || editor == null) return;
-
-    const binding = new MonacoBinding(
-      ydoc.getText("monaco"),
-      editor.getModel()!,
-      new Set([editor]),
-      provider.awareness
-    );
-
-    return () => {
-      binding.destroy();
-    };
-  }, [ydoc, provider, editor]);
-
-  return (
-    <>
-      <YjsProvider doc={ydoc} />
-      <Editor
-        defaultValue="// Connect to the room to start collaborating"
-        defaultLanguage="typescript"
-        onMount={(editor) => {
-          setEditor(editor);
-        }}
-        options={{
-          padding: {
-            top: 32,
-          },
-        }}
-        theme="vs-dark"
-      />
-    </>
-  );
-}
-
-function VideoRoom() {
-  const collaborationMode = {
-    enabled: true,
-  };
-  return <VideoConference participantType="host" collaborationMode={collaborationMode} />;
-}
+const groupId = "your-group-id";
+const groupName = "your-group-name";
 
 function App() {
-  const [userID, setUserID] = useState<string | null>(null);
+  const [userID, setUserID] = useState(null);
 
   return (
-    <>
-      {!userID ? (
-        <>
-          <input type="text" placeholder="userID" />
-          <button
-            onClick={() => {
-              const input = document.querySelector('input[type="text"]') as HTMLInputElement;
-              if (input) {
-                setUserID(input.value);
-              }
-            }}>
-            Iniciar
-          </button>
-        </>
-      ) : null}
-      {userID ? (
+    <Box minH="100vh" bg="#0f0a19" color="gray.500" px={6} py={8}>
+      <UserInput setUserID={setUserID} />
+      {userID && (
         <SuperVizRoomProvider
           developerKey={DEVELOPER_API_KEY}
-          group={{
-            id: groupId,
-            name: groupName,
-          }}
-          participant={{
-            id: userID,
-            name: "userName",
-          }}
+          group={{ id: groupId, name: groupName }}
+          participant={{ id: userID, name: "userName" }}
           roomId="ROOM_ID">
-          <EditorRoom />
-        </SuperVizRoomProvider>
-      ) : null}
-      {userID ? (
-        <SuperVizRoomProvider
-          developerKey={DEVELOPER_API_KEY}
-          group={{
-            id: groupId,
-            name: groupName,
-          }}
-          participant={{
-            id: userID.toString() + "video",
-            name: "userName",
-          }}
-          roomId="ROOM_ID">
+          <CodeEditor />
           <VideoRoom />
         </SuperVizRoomProvider>
-      ) : null}
-    </>
+      )}
+    </Box>
   );
 }
 
