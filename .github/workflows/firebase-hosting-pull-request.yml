@@ -11,6 +11,9 @@ jobs:
   build_and_preview:
     if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
     runs-on: ubuntu-latest
+    env:
+      VITE_SUPERVIZ_DEVELOPER_KEY: ${{ secrets.VITE_SUPERVIZ_DEVELOPER_KEY }}
+      VITE_SUPERVIZ_PRODUCTION_KEY: ${{ secrets.VITE_SUPERVIZ_PRODUCTION_KEY }}
     steps:
       - uses: actions/checkout@v4
       - name: Set up Node.js
@@ -19,11 +22,6 @@ jobs:
           node-version: '20.18.0'
       - name: Install dependencies
         run: npm ci
-      - name: Set environment variables
-        env:
-          VITE_SUPERVIZ_DEVELOPER_KEY: ${{ secrets.VITE_SUPERVIZ_DEVELOPER_KEY }}
-          VITE_SUPERVIZ_PRODUCTION_KEY: ${{ secrets.VITE_SUPERVIZ_PRODUCTION_KEY }}
-        run: echo "Environment variables set"
       - name: Build project
         run: npm run build
       - uses: FirebaseExtended/action-hosting-deploy@v0
