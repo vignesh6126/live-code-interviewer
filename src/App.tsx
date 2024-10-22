@@ -7,7 +7,9 @@ import { Editor } from "@monaco-editor/react";
 import { useEffect, useState } from "react";
 import { MonacoBinding } from "y-monaco";
 
-const DEVELOPER_API_KEY = import.meta.env.VITE_SUPERVIZ_DEVELOPER_KEY;
+const DEVELOPER_API_KEY = import.meta.env.DEV
+  ? import.meta.env.VITE_SUPERVIZ_DEVELOPER_KEY
+  : import.meta.env.VITE_SUPERVIZ_PRODUCTION_KEY;
 
 const groupId = sampleInfo.id;
 const groupName = sampleInfo.name;

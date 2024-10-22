@@ -2,9 +2,16 @@
   "compilerOptions": {
     "target": "ES2020",
     "useDefineForClassFields": true,
-    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "lib": ["ES2020", "DOM", "DOM.Iterable", "dom", "esnext"],
     "module": "ESNext",
     "skipLibCheck": true,
+
+    /*from copilot*/
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "resolveJsonModule": true,
+    "forceConsistentCasingInFileNames": true,
+    // "target": "es5",
 
     /* Bundler mode */
     "moduleResolution": "bundler",
