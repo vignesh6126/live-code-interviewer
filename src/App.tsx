@@ -9,21 +9,20 @@ const DEVELOPER_API_KEY = import.meta.env.DEV
   ? import.meta.env.VITE_SUPERVIZ_DEVELOPER_KEY
   : import.meta.env.VITE_SUPERVIZ_PRODUCTION_KEY;
 
-const groupId = "your-group-id";
-const groupName = "your-group-name";
-
 function App() {
-  const [userID, setUserID] = useState(null);
+  const [userID, setUserID] = useState<string | null>(null);
+  const [roomID, setRoomID] = useState<string | null>(null);
 
   return (
     <Box minH="100vh" bg="#0f0a19" color="gray.500" px={6} py={8}>
-      <UserInput setUserID={setUserID} />
-      {userID && (
+      <UserInput setUserID={setUserID} setRoomID={setRoomID} />
+      {userID && roomID && (
         <SuperVizRoomProvider
           developerKey={DEVELOPER_API_KEY}
-          group={{ id: groupId, name: groupName }}
+          group={{ id: roomID, name: "Your Group Name" }}  
           participant={{ id: userID, name: "userName" }}
-          roomId="ROOM_ID">
+          roomId={roomID}  
+        >
           <CodeEditor />
           <VideoRoom />
         </SuperVizRoomProvider>
@@ -33,3 +32,4 @@ function App() {
 }
 
 export default App;
+
