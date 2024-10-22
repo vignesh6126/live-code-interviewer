@@ -73,16 +73,20 @@ function App() {
 
   return (
     <>
-      <input type="text" placeholder="userID" />
-      <button
-        onClick={() => {
-          const input = document.querySelector('input[type="text"]');
-          if (input) {
-            setUserID(input.value);
-          }
-        }}>
-        Iniciar
-      </button>
+      {!userID ? (
+        <>
+          <input type="text" placeholder="userID" />
+          <button
+            onClick={() => {
+              const input = document.querySelector('input[type="text"]') as HTMLInputElement;
+              if (input) {
+                setUserID(input.value);
+              }
+            }}>
+            Iniciar
+          </button>
+        </>
+      ) : null}
       {userID ? (
         <SuperVizRoomProvider
           developerKey={DEVELOPER_API_KEY}
