@@ -15,14 +15,19 @@ function App() {
 
   return (
     <Box minH="100vh" bg="#0f0a19" color="gray.500" px={6} py={8}>
+      <button
+        onClick={() => {
+          window.location.href = "/interviewReport/index.html";
+        }}>
+        Go to /interviewReport/index.html
+      </button>
       <UserInput setUserID={setUserID} setRoomID={setRoomID} />
       {userID && roomID && (
         <SuperVizRoomProvider
           developerKey={DEVELOPER_API_KEY}
-          group={{ id: roomID, name: "Your Group Name" }}  
+          group={{ id: roomID, name: "Your Group Name" }}
           participant={{ id: userID, name: "userName" }}
-          roomId={roomID}  
-        >
+          roomId={roomID}>
           <CodeEditor />
           <VideoRoom />
         </SuperVizRoomProvider>
@@ -32,4 +37,3 @@ function App() {
 }
 
 export default App;
-
