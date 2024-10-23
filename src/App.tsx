@@ -32,6 +32,7 @@ function App() {
           roomId={roomID}>
           <CodeEditor />
           <VideoRoom />
+          <CodeEditor />
         </SuperVizRoomProvider>
       )}
     </Box>

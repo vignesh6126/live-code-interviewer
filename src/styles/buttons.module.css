@@ -1,0 +1,14 @@
+.groups {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.defaultInputs {
+  margin-right: 0.5rem;
+  color: #fff;
+}
+
+.defaultButtons {
+  margin-left: 0.5rem;
+}
