@@ -9,7 +9,7 @@ const DEVELOPER_API_KEY = import.meta.env.DEV
   ? import.meta.env.VITE_SUPERVIZ_DEVELOPER_KEY
   : import.meta.env.VITE_SUPERVIZ_PRODUCTION_KEY;
 
-const DEMO_RECORD_ID = import.meta.env.VITE_DEMO_RECORD_ID as string;
+//const DEMO_RECORD_ID = import.meta.env.VITE_DEMO_RECORD_ID as string; //DEBUG only
 
 function App() {
   const [userID, setUserID] = useState<string | null>(null);
@@ -19,9 +19,9 @@ function App() {
     <Box minH="100vh" bg="#0f0a19" color="gray.500" px={6} py={8}>
       <button
         onClick={() => {
-          window.location.href = `/interviewReport/index.html?recordId=${DEMO_RECORD_ID}`;
+          window.location.href = `/interviewReport/index.html?recordId=XXXX&roomId=XXXX`;
         }}>
-        Go to /interviewReport/index.html?{DEMO_RECORD_ID}
+        Go to /interviewReport/index.html?recordId=XXXX&roomId=XXXX
       </button>
       <UserInput setUserID={setUserID} setRoomID={setRoomID} />
       {userID && roomID && (
