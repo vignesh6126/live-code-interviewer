@@ -31,7 +31,7 @@ const UserInput = ({ setUserID, setRoomID }: any) => {
     <div>
       <input
         type="text"
-        placeholder="User ID"
+        placeholder="Name"
         value={inputValue}
         onChange={(e) => setInputValue(e.target.value)}
       />

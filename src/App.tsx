@@ -28,7 +28,7 @@ function App() {
         <SuperVizRoomProvider
           developerKey={DEVELOPER_API_KEY}
           group={{ id: roomID, name: "Your Group Name" }}
-          participant={{ id: userID, name: "userName" }}
+          participant={{ id: userID, name: userID }}
           roomId={roomID}>
           <CodeEditor />
           <VideoRoom />
