@@ -1,6 +1,6 @@
 import React from "react";
 import ReactDOM from "react-dom";
-import InterviewReportComponent from "./interviewReportComponent";
+import InterviewReportComponent from "./InterviewReportComponent";
 
 ReactDOM.render(
   <React.StrictMode>
