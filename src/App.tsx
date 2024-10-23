@@ -17,13 +17,17 @@ function App() {
 
   return (
     <Box minH="100vh" bg="#0f0a19" color="gray.500" px={6} py={8}>
-      <button
-        onClick={() => {
-          window.location.href = `/interviewReport/index.html?recordId=XXXX&roomId=XXXX`;
-        }}>
-        Go to /interviewReport/index.html?recordId=XXXX&roomId=XXXX
-      </button>
-      <UserInput setUserID={setUserID} setRoomID={setRoomID} />
+      {!userID && (
+        <>
+          <button
+            onClick={() => {
+              window.location.href = `/interviewReport/index.html?recordId=XXXX&roomId=XXXX`;
+            }}>
+            Go to /interviewReport/index.html?recordId=XXXX&roomId=XXXX
+          </button>
+          <UserInput setUserID={setUserID} setRoomID={setRoomID} />
+        </>
+      )}
       {userID && roomID && (
         <SuperVizRoomProvider
           developerKey={DEVELOPER_API_KEY}
@@ -32,7 +36,7 @@ function App() {
           roomId={roomID}>
           <CodeEditor />
           <VideoRoom />
-          <CodeEditor />
+          {/* <CodeEditor /> Why a second editor, gustavo? */}
         </SuperVizRoomProvider>
       )}
     </Box>
