@@ -2,9 +2,9 @@ import React, { ReactNode, useState } from "react";
 
 interface CollapsibleTextProps {
   title: string;
-  log: string;
-  status: string;
-  children: ReactNode;
+  log?: string;
+  status?: string;
+  children?: ReactNode;
 }
 
 const CollapsibleText: React.FC<CollapsibleTextProps> = ({ title, log, status, children }) => {
@@ -12,15 +12,18 @@ const CollapsibleText: React.FC<CollapsibleTextProps> = ({ title, log, status, c
 
   return (
     <div style={{ backgroundColor: "#999999" }}>
-      <button onClick={() => setIsOpen(!isOpen)}>
-        {isOpen ? "Hide" : "Show"} {title}
-      </button>
-      {isOpen && (
+      {(log || children || status) && (
+        <button onClick={() => setIsOpen(!isOpen)}>
+          {isOpen ? "Hide" : "Show"} {title}
+        </button>
+      )}
+      {isOpen && (log || children || status) && (
         <>
-          {children} <div dangerouslySetInnerHTML={{ __html: log.replace(/\n/g, "<br />") }} />
+          {/* {children} <div dangerouslySetInnerHTML={{ __html: log.replace(/\n/g, "<br />") }} /> */}
+          {children} <div> {log} </div>
         </>
       )}
-      <h4>Status: {status}</h4>
+      {status && <h4>Status: {status}</h4>}
       {/*TODO: change icon based on status... */}
     </div>
   );

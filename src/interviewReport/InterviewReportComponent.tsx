@@ -15,17 +15,7 @@ const InterviewReportComponent = () => {
   const [roomId, setRoomId] = useState<string | null>(null);
   const [videoURL, setVideoURL] = useState<string | null>(null);
 
-  const [InterviewVideoPropsStatus, setInterviewVideoPropsStatus] = useState({
-    status: "blank",
-    log: "Starting...",
-  });
-
-  const [RequestTranscriptPropsStatus, setRequestTranscriptPropsStatus] = useState({
-    status: "blank",
-    log: "Starting...",
-  });
-
-  // Gets parameter with the recordId and roomId from the URL
+  // Execute on load based on the params
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     setRecordId(params.get("recordId"));
@@ -34,24 +24,13 @@ const InterviewReportComponent = () => {
     // Get video from interview and controls it's features
     async function getInterviewVideo() {
       console.log("Requesting video...");
-      setInterviewVideoPropsStatus((interviewVideoPropsStatus) => ({
-        status: "loading",
-        log: interviewVideoPropsStatus.log + "\nRequesting video...",
-      }));
       try {
         // Get most recent video from the account TODO: make a check of the room name for getting the right video
         const request = await getRecordings();
-        setInterviewVideoPropsStatus((InterviewVideoPropsStatus) => ({
-          status: "success",
-          log: InterviewVideoPropsStatus.log + "\nSuccess: Video Interview requested",
-        }));
         setVideoURL(request.data[0].url);
         console.log("Video Interview URL setted: ", request.data[0].url);
       } catch (error) {
-        setInterviewVideoPropsStatus((interviewVideoPropsStatus) => ({
-          status: "error",
-          log: interviewVideoPropsStatus.log + "\nError: " + error,
-        }));
+        console.error("Error getting video from interview: ", error);
       }
     }
     getInterviewVideo();
@@ -65,7 +44,7 @@ const InterviewReportComponent = () => {
         </h3>
       </div>
       {/* Interview Video */}
-      <CollapsibleText title="Interview Video" {...InterviewVideoPropsStatus}>
+      <CollapsibleText title="Interview Video">
         {videoURL ? (
           <video controls width="1000">
             <source src={videoURL} type="video/mp4" />
@@ -74,9 +53,6 @@ const InterviewReportComponent = () => {
         ) : (
           <p>Video not available</p>
         )}
-      </CollapsibleText>
-      <CollapsibleText title="Video transcript" {...RequestTranscriptPropsStatus}>
-        <></>
       </CollapsibleText>
 
       <div style={{ marginTop: 450 }}>
