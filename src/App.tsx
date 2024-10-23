@@ -19,12 +19,12 @@ function App() {
       {userID && roomID && (
         <SuperVizRoomProvider
           developerKey={DEVELOPER_API_KEY}
-          group={{ id: roomID, name: "Your Group Name" }}  
+          group={{ id: roomID, name: "Your Group Name" }}
           participant={{ id: userID, name: "userName" }}
-          roomId={roomID}  
+          roomId={roomID}
         >
-          <CodeEditor />
           <VideoRoom />
+          <CodeEditor />
         </SuperVizRoomProvider>
       )}
     </Box>
@@ -32,4 +32,3 @@ function App() {
 }
 
 export default App;
-

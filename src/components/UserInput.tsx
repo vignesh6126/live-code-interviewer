@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { Input, Button } from "@chakra-ui/react";
+import styles from "../styles/buttons.module.css";
 
 const UserInput = ({ setUserID, setRoomID }: any) => {
   const [inputValue, setInputValue] = useState("");
@@ -10,7 +12,9 @@ const UserInput = ({ setUserID, setRoomID }: any) => {
     let result = "";
     const length = 4;
     for (let i = 0; i < length; i++) {
-      result += characters.charAt(Math.floor(Math.random() * characters.length));
+      result += characters.charAt(
+        Math.floor(Math.random() * characters.length)
+      );
     }
     return result;
   };
@@ -18,31 +22,52 @@ const UserInput = ({ setUserID, setRoomID }: any) => {
   const handleGenerateRoomID = () => {
     const newRoomID = generateSimpleId();
     setInputRoomID(newRoomID);
-    setRoomID(newRoomID); 
+    setRoomID(newRoomID);
   };
 
-  
   const handleSubmit = () => {
     setUserID(inputValue);
-    setRoomID(roomID); 
+    setRoomID(roomID);
   };
 
   return (
-    <div>
-      <input
-        type="text"
-        placeholder="User ID"
-        value={inputValue}
-        onChange={(e) => setInputValue(e.target.value)}
-      />
-      <input
-        type="text"
-        placeholder="Room ID"
-        value={roomID}
-        onChange={(e) => setInputRoomID(e.target.value)} 
-      />
-      <button onClick={handleSubmit}>Iniciar</button>
-      <button onClick={handleGenerateRoomID}>Gerar Room ID</button>
+    <div className={styles.groups}>
+      <div className={styles.groupInputs}>
+        <Input
+          className={styles.defaultInputs}
+          type="text"
+          htmlSize={5}
+          width="auto"
+          placeholder="Username"
+          value={inputValue}
+          onChange={(e) => setInputValue(e.target.value)}
+        />
+        <Input
+          type="text"
+          className={styles.defaultInputs}
+          htmlSize={4}
+          width="auto"
+          placeholder="Room ID"
+          value={roomID}
+          onChange={(e) => setInputRoomID(e.target.value)}
+        />
+      </div>
+      <div className={styles.groupButtons}>
+        <Button
+          colorScheme="gray"
+          className={styles.defaultButtons}
+          onClick={handleSubmit}
+        >
+          Iniciar
+        </Button>
+        <Button
+          colorScheme="gray"
+          className={styles.defaultButtons}
+          onClick={handleGenerateRoomID}
+        >
+          Gerar Room ID
+        </Button>
+      </div>
     </div>
   );
 };
