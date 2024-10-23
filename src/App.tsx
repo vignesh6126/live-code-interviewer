@@ -15,6 +15,13 @@ function App() {
 
   return (
     <Box minH="100vh" bg="#0f0a19" color="gray.500" px={6} py={8}>
+      <button
+        onClick={() => {
+          window.location.href = "/interviewReport/index.html";
+        }}
+      >
+        Go to /interviewReport/index.html
+      </button>
       <UserInput setUserID={setUserID} setRoomID={setRoomID} />
       {userID && roomID && (
         <SuperVizRoomProvider
