@@ -11,21 +11,32 @@ import getSummary from "../services/reportGetSummary";
 
 const InterviewReportComponent = () => {
   const [recordId, setRecordId] = useState<string | null>(null);
+  const [roomId, setRoomId] = useState<string | null>(null);
 
+  // Gets parameter with the recordId and roomId from the URL
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const recordId = params.get("recordId");
     setRecordId(recordId);
+    const roomId = params.get("roomId");
+    setRoomId(roomId);
   }, []);
+
+  // Get all recordings, and requesting the transcript for the page recording
+  useEffect(() => {}, []);
 
   return (
     <>
       <div>
-        <h3>Interview Report</h3>
-        <p>recordId Parameter: {recordId}</p>
+        <h3>
+          Interview {recordId} report <br></br> From Room {roomId}
+        </h3>
       </div>
       <h1>Video AI Test</h1>
 
+      {/* Here goes all the steps */}
+
+      <h3>_________________________________DEBUG______________________________________</h3>
       {/* Get all recordings */}
       <h3>Etapa 1 - Get all recordings</h3>
       <button

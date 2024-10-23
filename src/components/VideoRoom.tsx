@@ -5,7 +5,13 @@ const VideoRoom = () => {
     enabled: true,
   };
 
-  return <VideoConference participantType="host" collaborationMode={collaborationMode} />;
+  return (
+    <VideoConference
+      enableRecording={true}
+      participantType="host"
+      collaborationMode={collaborationMode}
+    />
+  );
 };
 
 export default VideoRoom;
