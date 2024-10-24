@@ -7,7 +7,6 @@ function postCode(roomId: any, value: any) {
       { roomId: roomId, code: value },
       {
         headers: {
-          "Access-Control-Allow-Origin": "*",
           "cache-control": "no-cache",
           "x-apikey": "0a1bc2c956f3e5abbe388499ace920dae7c0b",
           "content-type": "application/json",

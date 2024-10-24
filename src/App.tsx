@@ -19,9 +19,9 @@ function App() {
         <>
           <Button
             onClick={() => {
-              window.location.href = `/interviewReport/index.html?roomId=XXXX`;
+              window.location.href = `/interviewReport/index.html?roomId=${roomID}`;
             }}>
-            Go to /interviewReport/index.html?roomId=XXXX
+            Go to /interviewReport/index.html?roomId={roomID}
           </Button>
           <UserInput setUserID={setUserID} setRoomID={setRoomID} />
         </>
