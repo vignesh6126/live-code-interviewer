@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+
+//Import services
 import getRecordings from "../services/getRecording";
 import requestGenerateTranscript from "../services/requestGenerateTranscript";
 import getRecordingsWithTranscriptionReady from "../services/getRecordingsWithTranscriptionReady";
@@ -10,14 +12,27 @@ import getTopics from "../services/reportGetTopics";
 import getSummary from "../services/reportGetSummary";
 import CollapsibleText from "../components/CollapsibleText";
 
-const InterviewReportComponent = () => {
-  const [recordId, setRecordId] = useState<string | null>(null);
-  const [roomId, setRoomId] = useState<string | null>(null);
+//Import components
+import ReportActionItemComponent from "../components/ReportActionItemComponent";
 
+const InterviewReportComponent = () => {
+  // Main identifiers, for the room and the record
+  const [roomId, setRoomId] = useState<string | null>(null);
+  const [recordId, setRecordId] = useState<string | null>(null);
+
+  // Data of the interviews
   const [interviewsDataList, setInterviewsDataList] = useState<any | null>(null);
   const [selectedInterviewData, setSelectedInterviewData] = useState<any | null>(null);
 
+  // Data of the selected interview
   const [videoURL, setVideoURL] = useState<string | null>(null);
+  const [meetingTranscript, setMeetingTranscript] = useState<string>(
+    "Waiting for transcription...(if it's the first time here, it could take up to 20 minutes."
+  );
+  const [actionItens, setActionItens] = useState([]);
+
+  // TODO: update the transcription collapsable based on the status
+  // const [transcriptStatus, setTranscriptStatus] = useState<number | null>(null);
 
   // Execute on first render
   useEffect(() => {
@@ -28,7 +43,7 @@ const InterviewReportComponent = () => {
 
   // Execute when the roomId changes
   useEffect(() => {
-    // Execute wehn the roomId changes
+    // Execute when the roomId changes
     async function getInterviewsDataList(room_id: string | null) {
       console.log("Requesting interviews data list...");
       try {
@@ -52,7 +67,7 @@ const InterviewReportComponent = () => {
     setSelectedInterviewData(interviewsDataList[0]);
   }, [interviewsDataList]);
 
-  // Execute when the interviewData changes
+  // Execute when the selectedInterviewData changes - From the select view, for example
   useEffect(() => {
     if (!selectedInterviewData) {
       console.log("Interview data not available");
@@ -61,17 +76,76 @@ const InterviewReportComponent = () => {
 
     // Set the recordId and Video URL to the selectedInterviewData
     setRecordId(selectedInterviewData.uuid);
+    console.log("selectedInterviewData", selectedInterviewData);
     setVideoURL(selectedInterviewData.url);
+    console.log("Video URL", selectedInterviewData.url);
   }, [selectedInterviewData]);
 
-  // Execute when the recordId changes
+  // Execute when the recordId changes - From the select view, but after the video URL and interview UUID is set
   useEffect(() => {
-    console.log("recordId changed to: ", recordId);
+    if (!recordId) {
+      console.log("Record ID not available");
+      return;
+    }
+    console.log("Requesting transcript for interview ", recordId);
+
+    //Function for transform into human format the transcript
+    function transformTranscriptIntoHumanFormat(transcriptBrute: any) {
+      let transcript = "";
+      transcriptBrute.forEach((element: any) => {
+        transcript +=
+          new Date(element.startTime).toUTCString() +
+          " - " +
+          element.username +
+          ": " +
+          element.content +
+          "\n";
+      });
+      return transcript;
+    }
+
+    // First it tries to get the transcript for all the interviews, if it fails, it requests all the transcripts
+    interviewsDataList.forEach((interview: any) => {
+      getTranscript(interview.uuid)
+        .then((transcript) => {
+          console.log("Transcript for interview", interview.uuid, ": VALID!");
+
+          // but shows only the selected interview transcript
+          if (interview.uuid == recordId) {
+            setMeetingTranscript(transformTranscriptIntoHumanFormat(transcript));
+          }
+        })
+        .catch((error) => {
+          console.error("Error getting transcript for interview ", interview.uuid, ": ", error);
+          console.log("Requesting transcript for interview ", interview.uuid);
+          requestGenerateTranscript(interview.uuid)
+            .then(() => console.log("Transcript requested for interview ", interview.uuid))
+            .catch((error) =>
+              console.error(
+                "Error generating transcript request for interview ",
+                interview.uuid,
+                ": ",
+                error
+              )
+            );
+        });
+    });
+
+    // Get the action itens
+    getActionItems(recordId)
+      .then((actionItens) => {
+        console.log("Action itens for interview", recordId, ": VALID!");
+        setActionItens(actionItens);
+      })
+      .catch((error) => {
+        console.error("Error getting action itens for interview ", recordId, ": ", error);
+      });
   }, [recordId]);
 
   return (
     <>
       <div>
+        {/* Title and recordings selector */}
         <h3>Room - {roomId}</h3>
         {interviewsDataList && (
           <select
@@ -93,6 +167,7 @@ const InterviewReportComponent = () => {
           </select>
         )}
       </div>
+
       {/* Interview Video */}
       <CollapsibleText title="Interview Video">
         {videoURL ? (
@@ -105,7 +180,20 @@ const InterviewReportComponent = () => {
         )}
       </CollapsibleText>
 
-      {/* TODO: The source code here */}
+      {/* TODO: The source code typed on the interview here */}
+
+      {/* Meeting Transcript */}
+      <CollapsibleText title="Meeting transcript">
+        <textarea value={meetingTranscript} readOnly={true} style={{ width: 1000, height: 200 }} />
+      </CollapsibleText>
+
+      {/* Action itens */}
+      <CollapsibleText title="Action itens">
+        <textarea value={actionItens} readOnly={true} style={{ width: 1000, height: 200 }} />
+        {actionItens.map((actionItem: any) => (
+          <ReportActionItemComponent text={actionItem.text} score={actionItem.score} />
+        ))}
+      </CollapsibleText>
 
       <div style={{ marginTop: 450 }}>
         <h1>Debug</h1>
@@ -234,22 +322,16 @@ const InterviewReportComponent = () => {
         {/*  */}
         {/* get Action itens */}
         <h3>Etapa 6 - Get Actions Itens</h3>
-        <input
-          id="inputRecordingIDForGetActionsItens"
-          placeholder="Recording ID for get actions itens"></input>
         <button
           onClick={() => {
-            const recordingId = (
-              document.getElementById("inputRecordingIDForGetActionsItens") as HTMLInputElement
-            ).value;
-            console.log("getting actions itens for recordingId:", recordingId);
-            getActionItems(recordingId)
+            console.log("getting actions itens for recordingId:", recordId);
+            getActionItems(recordId as string)
               .then((transcript) => {
                 const textarea = document.getElementById(
                   "textAreaGetActionsItens"
                 ) as HTMLTextAreaElement;
                 if (textarea) {
-                  textarea.value = JSON.stringify(transcript.actionItems, null, 2);
+                  textarea.value = JSON.stringify(transcript, null, 2);
                 }
               })
               .catch((error) => console.error("Error getting action itens:", error));
@@ -269,17 +351,14 @@ const InterviewReportComponent = () => {
           placeholder="Recording ID for get follow-ups"></input>
         <button
           onClick={() => {
-            const recordingId = (
-              document.getElementById("inputRecordingIDForGetFollowUps") as HTMLInputElement
-            ).value;
-            console.log("getting follow-ups for recordingId:", recordingId);
-            getFollowUps(recordingId)
-              .then((transcript) => {
+            console.log("getting follow-ups for recordingId:", recordId);
+            getFollowUps(recordId as string)
+              .then((followUps) => {
                 const textarea = document.getElementById(
                   "textAreaGetFollowUps"
                 ) as HTMLTextAreaElement;
                 if (textarea) {
-                  textarea.value = JSON.stringify(transcript.followUps, null, 2);
+                  textarea.value = JSON.stringify(followUps[0]);
                 }
               })
               .catch((error) => console.error("Error getting follow-ups:", error));

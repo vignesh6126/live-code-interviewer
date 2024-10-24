@@ -17,17 +17,7 @@ function App() {
 
   return (
     <Box minH="100vh" bg="#0f0a19" color="gray.500" px={6} py={8}>
-      {!userID && (
-        <>
-          <button
-            onClick={() => {
-              window.location.href = `/interviewReport/index.html?roomId=XXXX`;
-            }}>
-            Go to /interviewReport/index.html?roomId=XXXX
-          </button>
-          <UserInput setUserID={setUserID} setRoomID={setRoomID} />
-        </>
-      )}
+      {!userID && <UserInput setUserID={setUserID} setRoomID={setRoomID} />}
       {userID && roomID && (
         <SuperVizRoomProvider
           developerKey={DEVELOPER_API_KEY}
@@ -48,6 +38,15 @@ function App() {
               );
             }}>
             Copy Room ID
+          </button>
+          <br />
+          <button
+            onClick={() => {
+              navigator.clipboard.writeText(
+                `${window.location.hostname}/interviewReport/index.html?roomId=${roomID}`
+              );
+            }}>
+            Get Link for Later Report
           </button>
         </>
       )}
