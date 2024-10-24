@@ -9,32 +9,76 @@ import getFollowUps from "../services/reportGetFollowUps";
 import getTopics from "../services/reportGetTopics";
 import getSummary from "../services/reportGetSummary";
 import CollapsibleText from "../components/CollapsibleText";
+import { get, set } from "lodash";
 
 const InterviewReportComponent = () => {
   const [recordId, setRecordId] = useState<string | null>(null);
   const [roomId, setRoomId] = useState<string | null>(null);
+  const [interviewData, setInterviewData] = useState<any | null>(null);
   const [videoURL, setVideoURL] = useState<string | null>(null);
 
-  // Execute on load based on the params
+  // Execute on firsto render
   useEffect(() => {
+    // Get the URL params
     const params = new URLSearchParams(window.location.search);
-    setRecordId(params.get("recordId"));
+    //setRecordId(params.get("recordId")); // TODO: Only if there's more than one record per room
     setRoomId(params.get("roomId"));
+  }, []);
+
+  // Execute when the roomId changes
+  useEffect(() => {
+    // Get the info from the last recorded interview for the roomId get from params
+    async function geLastInterviewDataForThisRoomId(room_id: string | null) {
+      console.log(`Requesting last interview data for this roomId: ${room_id}`);
+      try {
+        const request = await getRecordings();
+        function getInterviewData(recordingsList: any) {
+          let interviewData = null;
+          recordingsList.forEach((recording: any) => {
+            if (recording.roomId == room_id) {
+              interviewData = recording;
+              console.log(
+                `Interview data found for roomId ${room_id}: ${JSON.stringify(interviewData)}`
+              );
+              return;
+            }
+          });
+          setInterviewData(interviewData);
+        }
+        getInterviewData(request.data);
+      } catch (error) {
+        console.error("Error getting interview data: ", error);
+      }
+    }
+    setInterviewData(geLastInterviewDataForThisRoomId(roomId));
+  }, [roomId]);
+
+  // Execute when the interviewData changes
+  useEffect(() => {
+    if (!interviewData) {
+      console.log("Interview data not available");
+      return;
+    }
+
+    // Set the recordId to the interviewData
+    setRecordId(interviewData.uuid);
 
     // Get video from interview and controls it's features
     async function getInterviewVideo() {
       console.log("Requesting video...");
       try {
-        // Get most recent video from the account TODO: make a check of the room name for getting the right video
-        const request = await getRecordings();
-        setVideoURL(request.data[0].url);
-        console.log("Video Interview URL setted: ", request.data[0].url);
+        setVideoURL(interviewData.url);
       } catch (error) {
         console.error("Error getting video from interview: ", error);
       }
     }
     getInterviewVideo();
-  }, []);
+  }, [interviewData]);
+
+  // Execute when the recordId changes
+  useEffect(() => {
+    console.log("recordId changed to: ", recordId);
+  }, [recordId]);
 
   return (
     <>
@@ -54,6 +98,8 @@ const InterviewReportComponent = () => {
           <p>Video not available</p>
         )}
       </CollapsibleText>
+
+      {/* TODO: The source code here */}
 
       <div style={{ marginTop: 450 }}>
         <h1>Debug</h1>

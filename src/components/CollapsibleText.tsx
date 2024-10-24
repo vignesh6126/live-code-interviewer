@@ -8,7 +8,7 @@ interface CollapsibleTextProps {
 }
 
 const CollapsibleText: React.FC<CollapsibleTextProps> = ({ title, log, status, children }) => {
-  const [isOpen, setIsOpen] = useState(true);
+  const [isOpen, setIsOpen] = useState(false);
 
   return (
     <div style={{ backgroundColor: "#999999" }}>
