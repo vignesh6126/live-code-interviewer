@@ -9,7 +9,6 @@ import getFollowUps from "../services/reportGetFollowUps";
 import getTopics from "../services/reportGetTopics";
 import getSummary from "../services/reportGetSummary";
 import CollapsibleText from "../components/CollapsibleText";
-import { get, set } from "lodash";
 
 const InterviewReportComponent = () => {
   const [recordId, setRecordId] = useState<string | null>(null);
