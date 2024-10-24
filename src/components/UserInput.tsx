@@ -39,7 +39,6 @@ const UserInput = ({ setUserID, setRoomID }: any) => {
         <Input
           className={styles.defaultInputs}
           type="text"
-          htmlSize={5}
           width="auto"
           placeholder="Username"
           value={inputValue}
@@ -48,7 +47,6 @@ const UserInput = ({ setUserID, setRoomID }: any) => {
         <Input
           type="text"
           className={styles.defaultInputs}
-          htmlSize={4}
           width="auto"
           placeholder="Room ID"
           value={roomID}
