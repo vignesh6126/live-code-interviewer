@@ -36,8 +36,26 @@ function App() {
           roomId={roomID}>
           <CodeEditor />
           <VideoRoom />
-          {/* <CodeEditor /> Why a second editor, gustavo? */}
         </SuperVizRoomProvider>
+      )}
+      {roomID && (
+        <>
+          {/* TODO GUSTAVO: Transformar isso em botão flutuante na tela, que mostra o ROOM ID */}
+          <button
+            onClick={() => {
+              if (import.meta.env.DEV) {
+                navigator.clipboard.writeText(`http://localhost:5173/index.html?roomId=${roomID}`);
+              } else {
+                navigator.clipboard.writeText(
+                  `https://lcinterviewer.rotec.dev/index.html?roomId=${roomID}`
+                );
+              }
+
+              //TODO: copy only until the final / (avoiding the index.html and the query string)
+            }}>
+            Copy Room ID
+          </button>
+        </>
       )}
     </Box>
   );
