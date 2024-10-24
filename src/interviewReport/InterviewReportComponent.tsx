@@ -27,12 +27,14 @@ const InterviewReportComponent = () => {
   // Data of the selected interview
   const [videoURL, setVideoURL] = useState<string | null>(null);
   const [meetingTranscript, setMeetingTranscript] = useState<string>(
-    "Waiting for transcription...(if it's the first time here, it could take up to 20 minutes."
+    "Waiting for transcription...(if it's the first time here, it could take up to 20 minutes). Try again later, reload the page or check the debug section."
   );
-  const [actionItens, setActionItens] = useState([]);
+  const [actionItens, setActionItens] = useState([{ text: "Loading..." }]);
+  const [followUps, setFollowUps] = useState([{ text: "Loading...", score: 0 }]);
 
   // TODO: update the transcription collapsable based on the status
   // const [transcriptStatus, setTranscriptStatus] = useState<number | null>(null);
+  // 409 - loading; 404 - error;
 
   // Execute on first render
   useEffect(() => {
@@ -108,7 +110,7 @@ const InterviewReportComponent = () => {
     interviewsDataList.forEach((interview: any) => {
       getTranscript(interview.uuid)
         .then((transcript) => {
-          console.log("Transcript for interview", interview.uuid, ": VALID!");
+          console.log("Transcript for interview ", interview.uuid, ": VALID!");
 
           // but shows only the selected interview transcript
           if (interview.uuid == recordId) {
@@ -140,6 +142,16 @@ const InterviewReportComponent = () => {
       .catch((error) => {
         console.error("Error getting action itens for interview ", recordId, ": ", error);
       });
+
+    // Get the follow-ups
+    getFollowUps(recordId)
+      .then((followUps) => {
+        console.log("Follow-ups for interview", recordId, ": VALID!");
+        setFollowUps(followUps);
+      })
+      .catch((error) => {
+        console.error("Error getting follow-ups for interview ", recordId, ": ", error);
+      });
   }, [recordId]);
 
   return (
@@ -147,24 +159,34 @@ const InterviewReportComponent = () => {
       <div>
         {/* Title and recordings selector */}
         <h3>Room - {roomId}</h3>
+        Room Id:
+        <input
+          type="text"
+          value={roomId || ""}
+          onChange={(e) => setRoomId(e.target.value)}
+          placeholder="Enter Room ID"
+        />
         {interviewsDataList && (
-          <select
-            onChange={(e) => {
-              console.log("selectedInterviewData", e.target.value);
-              setSelectedInterviewData(
-                interviewsDataList.find((interview: any) => interview.uuid === e.target.value)
-              );
-            }}
-            value={recordId || ""}>
-            <option value="" disabled>
-              Select an interview
-            </option>
-            {interviewsDataList.map((interview: any) => (
-              <option key={interview.uuid} value={interview.uuid}>
-                {new Date(interview.createdAt).toUTCString()} - {interview.uuid}
+          <>
+            - Record Id:
+            <select
+              onChange={(e) => {
+                console.log("selectedInterviewData", e.target.value);
+                setSelectedInterviewData(
+                  interviewsDataList.find((interview: any) => interview.uuid === e.target.value)
+                );
+              }}
+              value={recordId || ""}>
+              <option value="" disabled>
+                Select an interview
               </option>
-            ))}
-          </select>
+              {interviewsDataList.map((interview: any) => (
+                <option key={interview.uuid} value={interview.uuid}>
+                  {new Date(interview.createdAt).toUTCString()} - {interview.uuid}
+                </option>
+              ))}
+            </select>
+          </>
         )}
       </div>
 
@@ -189,247 +211,261 @@ const InterviewReportComponent = () => {
 
       {/* Action itens */}
       <CollapsibleText title="Action itens">
-        <textarea value={actionItens} readOnly={true} style={{ width: 1000, height: 200 }} />
         {actionItens.map((actionItem: any) => (
           <ReportActionItemComponent text={actionItem.text} score={actionItem.score} />
         ))}
       </CollapsibleText>
 
-      <div style={{ marginTop: 450 }}>
-        <h1>Debug</h1>
-        <h3>_________________________________DEBUG______________________________________</h3>
-        {/* Get all recordings */}
-        <h3>Etapa 1 - Get all recordings</h3>
-        <button
-          onClick={() => {
-            console.log("getting recordings...");
-            getRecordings().then((recordings) => {
-              const textarea = document.getElementById("textAreaRecordings") as HTMLTextAreaElement;
-              if (textarea) {
-                textarea.value = JSON.stringify(recordings, null, 2);
-              }
-            });
-          }}>
-          Get all recordings
-        </button>
-        <textarea
-          style={{ height: 50, width: 1000 }}
-          id="textAreaRecordings"
-          placeholder="Recordings..."></textarea>
-        <br></br>
-        <br></br>
-        {/*  */}
-        {/* Generate transcript - it has to wait */}
-        <h3>Etapa 2 - Solicitar transcrição - tem que esperar o processo terminar</h3>
-        <input id="inputRecordingID" placeholder="Recording ID"></input>
-        <button
-          onClick={() => {
-            const recordingId = (document.getElementById("inputRecordingID") as HTMLInputElement)
-              .value;
-            console.log("generating transcript for recordingId:", recordingId);
-            requestGenerateTranscript(recordingId)
-              .then(() => console.log("Transcript requested"))
-              .catch((error) => console.error("Error generating transcript request:", error));
-          }}>
-          Request to generate transcript
-        </button>
-        <br></br>
-        <br></br>
-        {/*  */}
-        {/* Get recordings with transcription ready */}
-        <h3>Etapa 3 - Solicitar todas as gravações, com transcrição</h3>
-        <button
-          onClick={() => {
-            console.log("getting recordings with transcription ready...");
-            getRecordingsWithTranscriptionReady().then((recordings) => {
-              const textarea = document.getElementById(
-                "textAreaRecordingsWithTranscriptionReady"
-              ) as HTMLTextAreaElement;
-              if (textarea) {
-                textarea.value = JSON.stringify(recordings, null, 2);
-              }
-            });
-          }}>
-          Get recordings with transcription ready
-        </button>
-        <textarea
-          style={{ height: 50, width: 1000 }}
-          id="textAreaRecordingsWithTranscriptionReady"
-          placeholder="Recordings with transcription ready..."
-          readOnly></textarea>
-        <br></br>
-        <br></br>
-        {/*  */}
-        {/* get Transcript */}
-        <h3>Etapa 4 - Solicitar transcrição da gravação</h3>
-        <input
-          id="inputRecordingIDForGetTranscript"
-          placeholder="Recording ID for get transcript"></input>
-        <button
-          onClick={() => {
-            const recordingId = (
-              document.getElementById("inputRecordingIDForGetTranscript") as HTMLInputElement
-            ).value;
-            console.log("getting transcript for recordingId:", recordingId);
-            getTranscript(recordingId)
-              .then((transcript) => {
+      {/* Follow-ups */}
+      <CollapsibleText title="Follow-ups">
+        {followUps.map((followUp: any) => (
+          <p>
+            {followUp.text} - {followUp.score}
+          </p>
+        ))}
+      </CollapsibleText>
+
+      <h1 style={{ marginTop: 200 }}>Debug</h1>
+      <CollapsibleText title="Debug Section">
+        <>
+          <h3>_________________________________DEBUG______________________________________</h3>
+          {/* Get all recordings */}
+          <h3>Etapa 1 - Get all recordings</h3>
+          <button
+            onClick={() => {
+              console.log("getting recordings...");
+              getRecordings().then((recordings) => {
                 const textarea = document.getElementById(
-                  "textAreaTranscript"
+                  "textAreaRecordings"
                 ) as HTMLTextAreaElement;
                 if (textarea) {
-                  textarea.value = JSON.stringify(transcript, null, 2);
+                  textarea.value = JSON.stringify(recordings, null, 2);
                 }
-              })
-              .catch((error) => console.error("Error getting transcript:", error));
-          }}>
-          Get transcript
-        </button>
-        <textarea
-          style={{ height: 50, width: 1000 }}
-          id="textAreaTranscript"
-          placeholder="Transcript..."
-        />
-        {/*  */}
-        {/* get Questions */}
-        <h3>Etapa 5 - Get Questions</h3>
-        <input
-          id="inputRecordingIDForGetQuestions"
-          placeholder="Recording ID for get questions"></input>
-        <button
-          onClick={() => {
-            const recordingId = (
-              document.getElementById("inputRecordingIDForGetQuestions") as HTMLInputElement
-            ).value;
-            console.log("getting questions for recordingId:", recordingId);
-            getQuestions(recordingId)
-              .then((transcript) => {
+              });
+            }}>
+            Get all recordings
+          </button>
+          <textarea
+            style={{ height: 50, width: 1000 }}
+            id="textAreaRecordings"
+            placeholder="Recordings..."></textarea>
+          <br></br>
+          <br></br>
+          {/*  */}
+          {/* Generate transcript - it has to wait */}
+          <h3>Etapa 2 - Solicitar transcrição - tem que esperar o processo terminar</h3>
+          <input id="inputRecordingID" placeholder="Recording ID"></input>
+          <button
+            onClick={() => {
+              const recordingId = (document.getElementById("inputRecordingID") as HTMLInputElement)
+                .value;
+              console.log("generating transcript for recordingId:", recordingId);
+              requestGenerateTranscript(recordingId)
+                .then(() => console.log("Transcript requested"))
+                .catch((error) => console.error("Error generating transcript request:", error));
+            }}>
+            Request to generate transcript
+          </button>
+          <br></br>
+          <br></br>
+          {/*  */}
+          {/* Get recordings with transcription ready */}
+          <h3>Etapa 3 - Solicitar todas as gravações, com transcrição</h3>
+          <button
+            onClick={() => {
+              console.log("getting recordings with transcription ready...");
+              getRecordingsWithTranscriptionReady().then((recordings) => {
                 const textarea = document.getElementById(
-                  "textAreaGetQuestions"
+                  "textAreaRecordingsWithTranscriptionReady"
                 ) as HTMLTextAreaElement;
                 if (textarea) {
-                  textarea.value = JSON.stringify(transcript.questions, null, 2);
+                  textarea.value = JSON.stringify(recordings, null, 2);
                 }
-              })
-              .catch((error) => console.error("Error getting questions:", error));
-          }}>
-          Get questions
-        </button>
-        <textarea
-          style={{ height: 50, width: 1000 }}
-          id="textAreaGetQuestions"
-          placeholder="Questions..."
-        />
-        {/*  */}
-        {/* get Action itens */}
-        <h3>Etapa 6 - Get Actions Itens</h3>
-        <button
-          onClick={() => {
-            console.log("getting actions itens for recordingId:", recordId);
-            getActionItems(recordId as string)
-              .then((transcript) => {
-                const textarea = document.getElementById(
-                  "textAreaGetActionsItens"
-                ) as HTMLTextAreaElement;
-                if (textarea) {
-                  textarea.value = JSON.stringify(transcript, null, 2);
-                }
-              })
-              .catch((error) => console.error("Error getting action itens:", error));
-          }}>
-          Get actions itens
-        </button>
-        <textarea
-          style={{ height: 50, width: 1000 }}
-          id="textAreaGetActionsItens"
-          placeholder="Actions Itens..."
-        />
-        {/*  */}
-        {/* get Follow Ups */}
-        <h3>Etapa 7 - Get Follow-ups</h3>
-        <input
-          id="inputRecordingIDForGetFollowUps"
-          placeholder="Recording ID for get follow-ups"></input>
-        <button
-          onClick={() => {
-            console.log("getting follow-ups for recordingId:", recordId);
-            getFollowUps(recordId as string)
-              .then((followUps) => {
-                const textarea = document.getElementById(
-                  "textAreaGetFollowUps"
-                ) as HTMLTextAreaElement;
-                if (textarea) {
-                  textarea.value = JSON.stringify(followUps[0]);
-                }
-              })
-              .catch((error) => console.error("Error getting follow-ups:", error));
-          }}>
-          Get follow-ups
-        </button>
-        <textarea
-          style={{ height: 50, width: 1000 }}
-          id="textAreaGetFollowUps"
-          placeholder="Follow ups..."
-        />
-        {/*  */}
-        {/* get Topics */}
-        <h3>Etapa 8 - Get Topics</h3>
-        <input id="inputRecordingIDForGetTopics" placeholder="Recording ID for get topics"></input>
-        <button
-          onClick={() => {
-            const recordingId = (
-              document.getElementById("inputRecordingIDForGetTopics") as HTMLInputElement
-            ).value;
-            console.log("getting topics for recordingId:", recordingId);
-            getTopics(recordingId)
-              .then((transcript) => {
-                const textarea = document.getElementById(
-                  "textAreaGetTopics"
-                ) as HTMLTextAreaElement;
-                if (textarea) {
-                  textarea.value = JSON.stringify(transcript.topics, null, 2);
-                }
-              })
-              .catch((error) => console.error("Error getting topics:", error));
-          }}>
-          Get topics
-        </button>
-        <textarea
-          style={{ height: 50, width: 1000 }}
-          id="textAreaGetTopics"
-          placeholder="Topics..."
-        />
-        {/*  */}
-        {/* get Summary */}
-        <h3>Etapa 9 - Get Summary</h3>
-        <input
-          id="inputRecordingIDForGetSummary"
-          placeholder="Recording ID for get summary"></input>
-        <button
-          onClick={() => {
-            const recordingId = (
-              document.getElementById("inputRecordingIDForGetSummary") as HTMLInputElement
-            ).value;
-            console.log("getting summary for recordingId:", recordingId);
-            getSummary(recordingId)
-              .then((transcript) => {
-                const textarea = document.getElementById(
-                  "textAreaGetSummary"
-                ) as HTMLTextAreaElement;
-                if (textarea) {
-                  textarea.value = JSON.stringify(transcript.summary);
-                }
-              })
-              .catch((error) => console.error("Error getting summary:", error));
-          }}>
-          Get summary
-        </button>
-        <textarea
-          style={{ height: 50, width: 1000 }}
-          id="textAreaGetSummary"
-          placeholder="Summary..."
-        />
-        <h1>END OF DEBUG</h1>
-      </div>
+              });
+            }}>
+            Get recordings with transcription ready
+          </button>
+          <textarea
+            style={{ height: 50, width: 1000 }}
+            id="textAreaRecordingsWithTranscriptionReady"
+            placeholder="Recordings with transcription ready..."
+            readOnly></textarea>
+          <br></br>
+          <br></br>
+          {/*  */}
+          {/* get Transcript */}
+          <h3>Etapa 4 - Solicitar transcrição da gravação</h3>
+          <input
+            id="inputRecordingIDForGetTranscript"
+            placeholder="Recording ID for get transcript"></input>
+          <button
+            onClick={() => {
+              const recordingId = (
+                document.getElementById("inputRecordingIDForGetTranscript") as HTMLInputElement
+              ).value;
+              console.log("getting transcript for recordingId:", recordingId);
+              getTranscript(recordingId)
+                .then((transcript) => {
+                  const textarea = document.getElementById(
+                    "textAreaTranscript"
+                  ) as HTMLTextAreaElement;
+                  if (textarea) {
+                    textarea.value = JSON.stringify(transcript, null, 2);
+                  }
+                })
+                .catch((error) => console.error("Error getting transcript:", error));
+            }}>
+            Get transcript
+          </button>
+          <textarea
+            style={{ height: 50, width: 1000 }}
+            id="textAreaTranscript"
+            placeholder="Transcript..."
+          />
+          {/*  */}
+          {/* get Questions */}
+          <h3>Etapa 5 - Get Questions</h3>
+          <input
+            id="inputRecordingIDForGetQuestions"
+            placeholder="Recording ID for get questions"></input>
+          <button
+            onClick={() => {
+              const recordingId = (
+                document.getElementById("inputRecordingIDForGetQuestions") as HTMLInputElement
+              ).value;
+              console.log("getting questions for recordingId:", recordingId);
+              getQuestions(recordingId)
+                .then((transcript) => {
+                  const textarea = document.getElementById(
+                    "textAreaGetQuestions"
+                  ) as HTMLTextAreaElement;
+                  if (textarea) {
+                    textarea.value = JSON.stringify(transcript.questions, null, 2);
+                  }
+                })
+                .catch((error) => console.error("Error getting questions:", error));
+            }}>
+            Get questions
+          </button>
+          <textarea
+            style={{ height: 50, width: 1000 }}
+            id="textAreaGetQuestions"
+            placeholder="Questions..."
+          />
+          {/*  */}
+          {/* get Action itens */}
+          <h3>Etapa 6 - Get Actions Itens</h3>
+          <button
+            onClick={() => {
+              console.log("getting actions itens for recordingId:", recordId);
+              getActionItems(recordId as string)
+                .then((transcript) => {
+                  const textarea = document.getElementById(
+                    "textAreaGetActionsItens"
+                  ) as HTMLTextAreaElement;
+                  if (textarea) {
+                    textarea.value = JSON.stringify(transcript, null, 2);
+                  }
+                })
+                .catch((error) => console.error("Error getting action itens:", error));
+            }}>
+            Get actions itens
+          </button>
+          <textarea
+            style={{ height: 50, width: 1000 }}
+            id="textAreaGetActionsItens"
+            placeholder="Actions Itens..."
+          />
+          {/*  */}
+          {/* get Follow Ups */}
+          <h3>Etapa 7 - Get Follow-ups</h3>
+          <input
+            id="inputRecordingIDForGetFollowUps"
+            placeholder="Recording ID for get follow-ups"></input>
+          <button
+            onClick={() => {
+              console.log("getting follow-ups for recordingId:", recordId);
+              getFollowUps(recordId as string)
+                .then((followUps) => {
+                  const textarea = document.getElementById(
+                    "textAreaGetFollowUps"
+                  ) as HTMLTextAreaElement;
+                  if (textarea) {
+                    textarea.value = JSON.stringify(followUps[0]);
+                  }
+                })
+                .catch((error) => console.error("Error getting follow-ups:", error));
+            }}>
+            Get follow-ups
+          </button>
+          <textarea
+            style={{ height: 50, width: 1000 }}
+            id="textAreaGetFollowUps"
+            placeholder="Follow ups..."
+          />
+          {/*  */}
+          {/* get Topics */}
+          <h3>Etapa 8 - Get Topics</h3>
+          <input
+            id="inputRecordingIDForGetTopics"
+            placeholder="Recording ID for get topics"></input>
+          <button
+            onClick={() => {
+              const recordingId = (
+                document.getElementById("inputRecordingIDForGetTopics") as HTMLInputElement
+              ).value;
+              console.log("getting topics for recordingId:", recordingId);
+              getTopics(recordingId)
+                .then((transcript) => {
+                  const textarea = document.getElementById(
+                    "textAreaGetTopics"
+                  ) as HTMLTextAreaElement;
+                  if (textarea) {
+                    textarea.value = JSON.stringify(transcript.topics, null, 2);
+                  }
+                })
+                .catch((error) => console.error("Error getting topics:", error));
+            }}>
+            Get topics
+          </button>
+          <textarea
+            style={{ height: 50, width: 1000 }}
+            id="textAreaGetTopics"
+            placeholder="Topics..."
+          />
+          {/*  */}
+          {/* get Summary */}
+          <h3>Etapa 9 - Get Summary</h3>
+          <input
+            id="inputRecordingIDForGetSummary"
+            placeholder="Recording ID for get summary"></input>
+          <button
+            onClick={() => {
+              const recordingId = (
+                document.getElementById("inputRecordingIDForGetSummary") as HTMLInputElement
+              ).value;
+              console.log("getting summary for recordingId:", recordingId);
+              getSummary(recordingId)
+                .then((transcript) => {
+                  const textarea = document.getElementById(
+                    "textAreaGetSummary"
+                  ) as HTMLTextAreaElement;
+                  if (textarea) {
+                    textarea.value = JSON.stringify(transcript.summary);
+                  }
+                })
+                .catch((error) => console.error("Error getting summary:", error));
+            }}>
+            Get summary
+          </button>
+          <textarea
+            style={{ height: 50, width: 1000 }}
+            id="textAreaGetSummary"
+            placeholder="Summary..."
+          />
+          <h1>END OF DEBUG</h1>
+        </>
+      </CollapsibleText>
     </>
   );
 };
