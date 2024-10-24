@@ -13,66 +13,56 @@ import CollapsibleText from "../components/CollapsibleText";
 const InterviewReportComponent = () => {
   const [recordId, setRecordId] = useState<string | null>(null);
   const [roomId, setRoomId] = useState<string | null>(null);
-  const [interviewData, setInterviewData] = useState<any | null>(null);
+
+  const [interviewsDataList, setInterviewsDataList] = useState<any | null>(null);
+  const [selectedInterviewData, setSelectedInterviewData] = useState<any | null>(null);
+
   const [videoURL, setVideoURL] = useState<string | null>(null);
 
-  // Execute on firsto render
+  // Execute on first render
   useEffect(() => {
     // Get the URL params
     const params = new URLSearchParams(window.location.search);
-    //setRecordId(params.get("recordId")); // TODO: Only if there's more than one record per room
     setRoomId(params.get("roomId"));
   }, []);
 
   // Execute when the roomId changes
   useEffect(() => {
-    // Get the info from the last recorded interview for the roomId get from params
-    async function geLastInterviewDataForThisRoomId(room_id: string | null) {
-      console.log(`Requesting last interview data for this roomId: ${room_id}`);
+    // Execute wehn the roomId changes
+    async function getInterviewsDataList(room_id: string | null) {
+      console.log("Requesting interviews data list...");
       try {
         const request = await getRecordings();
-        function getInterviewData(recordingsList: any) {
-          let interviewData = null;
-          recordingsList.forEach((recording: any) => {
-            if (recording.roomId == room_id) {
-              interviewData = recording;
-              console.log(
-                `Interview data found for roomId ${room_id}: ${JSON.stringify(interviewData)}`
-              );
-              return;
-            }
-          });
-          setInterviewData(interviewData);
-        }
-        getInterviewData(request.data);
+        const filteredData = request.data.filter((recording: any) => recording.roomId == room_id);
+        setInterviewsDataList(filteredData);
       } catch (error) {
-        console.error("Error getting interview data: ", error);
+        console.error("Error getting interviews data list: ", error);
       }
     }
-    setInterviewData(geLastInterviewDataForThisRoomId(roomId));
+    getInterviewsDataList(roomId);
   }, [roomId]);
+
+  //Exectue when the interviewsDataList changes
+  useEffect(() => {
+    if (!interviewsDataList) {
+      console.log("Interviews data list not available");
+      return;
+    }
+    // Set the selectedInterviewData to the first interview
+    setSelectedInterviewData(interviewsDataList[0]);
+  }, [interviewsDataList]);
 
   // Execute when the interviewData changes
   useEffect(() => {
-    if (!interviewData) {
+    if (!selectedInterviewData) {
       console.log("Interview data not available");
       return;
     }
 
-    // Set the recordId to the interviewData
-    setRecordId(interviewData.uuid);
-
-    // Get video from interview and controls it's features
-    async function getInterviewVideo() {
-      console.log("Requesting video...");
-      try {
-        setVideoURL(interviewData.url);
-      } catch (error) {
-        console.error("Error getting video from interview: ", error);
-      }
-    }
-    getInterviewVideo();
-  }, [interviewData]);
+    // Set the recordId and Video URL to the selectedInterviewData
+    setRecordId(selectedInterviewData.uuid);
+    setVideoURL(selectedInterviewData.url);
+  }, [selectedInterviewData]);
 
   // Execute when the recordId changes
   useEffect(() => {
@@ -82,9 +72,26 @@ const InterviewReportComponent = () => {
   return (
     <>
       <div>
-        <h3>
-          Interview {recordId} report <br></br> From Room {roomId}
-        </h3>
+        <h3>Room - {roomId}</h3>
+        {interviewsDataList && (
+          <select
+            onChange={(e) => {
+              console.log("selectedInterviewData", e.target.value);
+              setSelectedInterviewData(
+                interviewsDataList.find((interview: any) => interview.uuid === e.target.value)
+              );
+            }}
+            value={recordId || ""}>
+            <option value="" disabled>
+              Select an interview
+            </option>
+            {interviewsDataList.map((interview: any) => (
+              <option key={interview.uuid} value={interview.uuid}>
+                {new Date(interview.createdAt).toUTCString()} - {interview.uuid}
+              </option>
+            ))}
+          </select>
+        )}
       </div>
       {/* Interview Video */}
       <CollapsibleText title="Interview Video">
