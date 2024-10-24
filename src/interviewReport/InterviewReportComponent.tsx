@@ -52,7 +52,9 @@ const InterviewReportComponent = () => {
       console.log("Requesting interviews data list...");
       try {
         const request = await getRecordings();
-        const filteredData = request.data.filter((recording: any) => recording.roomId == room_id);
+        const filteredData = request.data.filter(
+          (recording: any) => recording.roomId == room_id
+        );
         setInterviewsDataList(filteredData);
       } catch (error) {
         console.error("Error getting interviews data list: ", error);
@@ -204,6 +206,7 @@ const InterviewReportComponent = () => {
           placeholder="Enter Room ID"
         />
         {interviewsDataList && (
+
           <>
             - Record Id:
             <select
@@ -240,6 +243,7 @@ const InterviewReportComponent = () => {
       </CollapsibleText>
 
       {/* TODO: The source code typed on the interview here */}
+
 
       {/* Meeting Transcript */}
       <CollapsibleText title="Meeting transcript">
