@@ -20,8 +20,7 @@ function App() {
           <Button
             onClick={() => {
               window.location.href = `/interviewReport/index.html?roomId=XXXX`;
-            }}
-          >
+            }}>
             Go to /interviewReport/index.html?roomId=XXXX
           </Button>
           <UserInput setUserID={setUserID} setRoomID={setRoomID} />
@@ -32,9 +31,8 @@ function App() {
           developerKey={DEVELOPER_API_KEY}
           group={{ id: roomID, name: "Your Group Name" }}
           participant={{ id: userID, name: userID }}
-          roomId={roomID}
-        >
-          <CodeEditor />
+          roomId={roomID}>
+          <CodeEditor roomId={roomID} />
           <VideoRoom />
         </SuperVizRoomProvider>
       )}
@@ -47,15 +45,13 @@ function App() {
             zIndex="1000"
             borderRadius="full"
             p={4}
-            boxShadow="lg"
-          >
+            boxShadow="lg">
             <Button
               colorScheme="teal"
               onClick={() => {
                 const roomURL = `${window.location.origin}/index.html?roomId=${roomID}`;
                 navigator.clipboard.writeText(roomURL);
-              }}
-            >
+              }}>
               Copy Room ID
             </Button>
           </Box>
@@ -65,8 +61,7 @@ function App() {
               navigator.clipboard.writeText(
                 `${window.location.origin}/interviewReport/index.html?roomId=${roomID}`
               );
-            }}
-          >
+            }}>
             Get Link for Later Report
           </Button>
         </>

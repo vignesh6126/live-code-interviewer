@@ -8,10 +8,11 @@ import { YjsProvider, useYjsProvider } from "@superviz/react-sdk";
 import * as Y from "yjs";
 import { MonacoBinding } from "y-monaco";
 import * as monaco from "monaco-editor";
+import postCode from "../services/postCode";
 
 const ydoc = new Y.Doc();
 
-const CodeEditor = () => {
+const CodeEditor = (props: { roomId: string }) => {
   const editorRef = useRef<monaco.editor.IStandaloneCodeEditor | null>(null);
   const [value, setValue] = useState<string>("//Code goes here");
   const [language, setLanguage] = useState("javascript");
@@ -50,6 +51,12 @@ const CodeEditor = () => {
         <HStack spacing={4}>
           <Box w="50%">
             <LanguageSelector language={language} onSelect={onSelect} />
+            <button
+              onClick={() => {
+                postCode(props.roomId, value);
+              }}>
+              Save this code
+            </button>
             <Editor
               options={{
                 minimap: {
