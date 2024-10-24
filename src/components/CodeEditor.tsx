@@ -24,7 +24,6 @@ const CodeEditor = () => {
 
   const onSelect = (language: any) => {
     setLanguage(language);
-    setValue(CODE_SNIPPETS[language]);
   };
 
   useEffect(() => {
@@ -63,7 +62,7 @@ const CodeEditor = () => {
               defaultValue={CODE_SNIPPETS[language]}
               onMount={onMount}
               value={value}
-              onChange={(value: any) => setValue(value)}
+              onChange={(newValue: any) => setValue(newValue)}
             />
           </Box>
           <Output editorRef={editorRef} language={language} />

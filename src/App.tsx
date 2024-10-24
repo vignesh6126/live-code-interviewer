@@ -59,6 +59,16 @@ function App() {
               Copy Room ID
             </Button>
           </Box>
+          <Button
+            colorScheme="teal"
+            onClick={() => {
+              navigator.clipboard.writeText(
+                `${window.location.origin}/interviewReport/index.html?roomId=${roomID}`
+              );
+            }}
+          >
+            Get Link for Later Report
+          </Button>
         </>
       )}
     </Box>

@@ -2,6 +2,7 @@ import { VideoConference } from "@superviz/react-sdk";
 import { useEffect } from "react";
 
 const VideoRoom = () => {
+  // If "false" works on full screen/highlight mode
   const collaborationMode = {
     enabled: true,
   };
@@ -17,6 +18,7 @@ const VideoRoom = () => {
 
   return (
     <VideoConference
+      skipMeetingSettings={true}
       enableRecording={true}
       participantType="host"
       collaborationMode={collaborationMode}
