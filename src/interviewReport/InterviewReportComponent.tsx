@@ -123,7 +123,12 @@ const InterviewReportComponent = () => {
           console.error("Error getting transcript for interview ", interview.uuid, ": ", error);
           console.log("Requesting transcript for interview ", interview.uuid);
           requestGenerateTranscript(interview.uuid)
-            .then(() => console.log("Transcript requested for interview ", interview.uuid))
+            .then(() =>
+              console.log(
+                "TRANSCRIPT REQUESTED FOR SUPERVIZ, U HAVE TO WAIT. UUID: ",
+                interview.uuid
+              )
+            )
             .catch((error) =>
               console.error(
                 "Error generating transcript request for interview ",
