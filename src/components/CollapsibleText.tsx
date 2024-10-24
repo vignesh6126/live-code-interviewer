@@ -11,7 +11,7 @@ const CollapsibleText: React.FC<CollapsibleTextProps> = ({ title, log, status, c
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <div style={{ backgroundColor: "#999999" }}>
+    <div style={{ backgroundColor: "#999999", padding: 12, margin: 12 }}>
       {(log || children || status) && (
         <button onClick={() => setIsOpen(!isOpen)}>
           {isOpen ? "Hide" : "Show"} {title}
