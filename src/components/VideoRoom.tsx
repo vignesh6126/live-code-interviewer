@@ -18,6 +18,7 @@ const VideoRoom = () => {
 
   return (
     <VideoConference
+      skipMeetingSettings={true}
       enableRecording={true}
       participantType="host"
       collaborationMode={collaborationMode}
