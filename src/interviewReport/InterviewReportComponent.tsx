@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react";
-
-//Import services
 import getRecordings from "../services/getRecording";
 import requestGenerateTranscript from "../services/requestGenerateTranscript";
+import getRecordingsWithTranscriptionReady from "../services/getRecordingsWithTranscriptionReady";
 import getTranscript from "../services/getTranscript";
 import getQuestions from "../services/reportGetQuestions";
 import getActionItems from "../services/reportGetActionItens";
@@ -11,13 +10,9 @@ import getTopics from "../services/reportGetTopics";
 import getSummary from "../services/reportGetSummary";
 import CollapsibleText from "../components/CollapsibleText";
 
-//Import components
-import ReportActionItemComponent from "../components/ReportActionItemComponent";
-
 const InterviewReportComponent = () => {
-  // Main identifiers, for the room and the record
-  const [roomId, setRoomId] = useState<string | null>(null);
   const [recordId, setRecordId] = useState<string | null>(null);
+  const [roomId, setRoomId] = useState<string | null>(null);
 
   // Data of the interviews
   const [interviewsDataList, setInterviewsDataList] = useState<any | null>(
@@ -27,7 +22,6 @@ const InterviewReportComponent = () => {
     any | null
   >(null);
 
-  // Data of the selected interview
   const [videoURL, setVideoURL] = useState<string | null>(null);
   const [meetingTranscript, setMeetingTranscript] = useState<string>(
     "Waiting for transcription...(if it's the first time here, it could take up to 20 minutes). Try again later, reload the page or check the debug section."
@@ -40,9 +34,8 @@ const InterviewReportComponent = () => {
   const [topics, setTopics] = useState([{ text: "Loading..." }]);
   const [summary, setSummary] = useState([{ text: "Loading..." }]);
 
-  // TODO: update the transcription collapsable based on the status
-  // const [transcriptStatus, setTranscriptStatus] = useState<number | null>(null);
-  // 409 - loading; 404 - error;
+  // Estados de carregamento
+  const [videoStatus, setVideoStatus] = useState<string>("loading");
 
   // Execute on first render
   useEffect(() => {
@@ -53,7 +46,7 @@ const InterviewReportComponent = () => {
 
   // Execute when the roomId changes
   useEffect(() => {
-    // Execute when the roomId changes
+    // Execute wehn the roomId changes
     async function getInterviewsDataList(room_id: string | null) {
       console.log("Requesting interviews data list...");
       try {
@@ -79,7 +72,7 @@ const InterviewReportComponent = () => {
     setSelectedInterviewData(interviewsDataList[0]);
   }, [interviewsDataList]);
 
-  // Execute when the selectedInterviewData changes - From the select view, for example
+  // Execute when the interviewData changes
   useEffect(() => {
     if (!selectedInterviewData) {
       console.log("Interview data not available");
@@ -88,32 +81,20 @@ const InterviewReportComponent = () => {
 
     // Set the recordId and Video URL to the selectedInterviewData
     setRecordId(selectedInterviewData.uuid);
-    console.log("selectedInterviewData", selectedInterviewData);
     setVideoURL(selectedInterviewData.url);
-    console.log("Video URL", selectedInterviewData.url);
   }, [selectedInterviewData]);
 
-  // Execute when the recordId changes - From the select view, but after the video URL and interview UUID is set
+  // Execute when the recordId changes
   useEffect(() => {
-    if (!recordId) {
-      console.log("Record ID not available");
-      return;
-    }
-    console.log("Requesting transcript for interview ", recordId);
+    console.log("recordId changed to: ", recordId);
+  }, [recordId]);
 
-    //Function for transform into human format the transcript
-    function transformTranscriptIntoHumanFormat(transcriptBrute: any) {
-      let transcript = "";
-      transcriptBrute.forEach((element: any) => {
-        transcript +=
-          new Date(element.startTime).toUTCString() +
-          " - " +
-          element.username +
-          ": " +
-          element.content +
-          "\n";
-      });
-      return transcript;
+  // Atualizar o status do vídeo
+  useEffect(() => {
+    if (videoURL) {
+      setVideoStatus("success");
+    } else {
+      setVideoStatus("failed");
     }
 
     // First it tries to get the transcript for all the interviews, if it fails, it requests all the transcripts
@@ -234,15 +215,7 @@ const InterviewReportComponent = () => {
   return (
     <>
       <div>
-        {/* Title and recordings selector */}
         <h3>Room - {roomId}</h3>
-        Room Id:
-        <input
-          type="text"
-          value={roomId || ""}
-          onChange={(e) => setRoomId(e.target.value)}
-          placeholder="Enter Room ID"
-        />
         {interviewsDataList && (
           <>
             - Record Id:
@@ -270,9 +243,8 @@ const InterviewReportComponent = () => {
           </>
         )}
       </div>
-
       {/* Interview Video */}
-      <CollapsibleText title="Interview Video">
+      <CollapsibleText title="Interview Video" status={videoStatus}>
         {videoURL ? (
           <video controls width="1000">
             <source src={videoURL} type="video/mp4" />
@@ -283,7 +255,7 @@ const InterviewReportComponent = () => {
         )}
       </CollapsibleText>
 
-      {/* TODO: The source code typed on the interview here */}
+      {/* TODO: The source code here */}
 
       {/* Meeting Transcript */}
       <CollapsibleText title="Meeting transcript">

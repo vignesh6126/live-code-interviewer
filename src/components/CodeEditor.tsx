@@ -8,7 +8,11 @@ import { YjsProvider, useYjsProvider } from "@superviz/react-sdk";
 import * as Y from "yjs";
 import { MonacoBinding } from "y-monaco";
 import * as monaco from "monaco-editor";
-import postCode from "../services/postCode";
+// import postCode from "../services/postCode";
+// import { getFirestore } from "firebase/firestore";
+// import { initializeApp } from "firebase/app";
+// initializeApp();
+// const dbFirestore = getFirestore();
 
 const ydoc = new Y.Doc();
 
@@ -17,6 +21,9 @@ const CodeEditor = (props: { roomId: string }) => {
   const [value, setValue] = useState<string>("//Code goes here");
   const [language, setLanguage] = useState("javascript");
   const { provider } = useYjsProvider();
+
+  // test TODO: remove
+  props.roomId = "test";
 
   const onMount = (editor: monaco.editor.IStandaloneCodeEditor) => {
     editorRef.current = editor;
@@ -44,6 +51,14 @@ const CodeEditor = (props: { roomId: string }) => {
       binding.destroy();
     };
   }, [provider]);
+
+  // async function saveCode() {
+  //   const docRef = dbFirestore.collection("codes").doc(props.roomId);
+
+  //   await docRef.set({
+  //     code: value,
+  //   });
+  // }
 
   return (
     <YjsProvider doc={ydoc}>
