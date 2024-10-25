@@ -8,15 +8,14 @@ import { YjsProvider, useYjsProvider } from "@superviz/react-sdk";
 import * as Y from "yjs";
 import { MonacoBinding } from "y-monaco";
 import * as monaco from "monaco-editor";
-// import postCode from "../services/postCode";
-// import { getFirestore } from "firebase/firestore";
-// import { initializeApp } from "firebase/app";
-// initializeApp();
-// const dbFirestore = getFirestore();
+import { firestore } from "../main";
+import { doc, setDoc } from "firebase/firestore";
+
+// TODO: Save multiples code for the same room
+//let savedCodeCode = 0;
 
 const ydoc = new Y.Doc();
-
-const CodeEditor = () => {
+const CodeEditor = (props: { roomId: string }) => {
   const editorRef = useRef<monaco.editor.IStandaloneCodeEditor | null>(null);
   const [value, setValue] = useState<string>("//Code goes here");
   const [language, setLanguage] = useState("javascript");
@@ -49,13 +48,15 @@ const CodeEditor = () => {
     };
   }, [provider]);
 
-  // async function saveCode() {
-  //   const docRef = dbFirestore.collection("codes").doc(props.roomId);
+  async function saveCode() {
+    const docReference = doc(firestore, `codes/${props.roomId}`);
+    const docData = {
+      code: value,
+    };
+    setDoc(docReference, docData);
 
-  //   await docRef.set({
-  //     code: value,
-  //   });
-  // }
+    console.log("Code saved");
+  }
 
   return (
     <YjsProvider doc={ydoc}>
@@ -63,12 +64,7 @@ const CodeEditor = () => {
         <HStack spacing={4}>
           <Box w="50%">
             <LanguageSelector language={language} onSelect={onSelect} />
-            <button
-              onClick={() => {
-                //postCode(props.roomId, value);
-              }}>
-              Save this code
-            </button>
+            <button onClick={saveCode}>Save Code</button>
             <Editor
               options={{
                 minimap: {
