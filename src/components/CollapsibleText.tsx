@@ -26,7 +26,6 @@ const getStatusIcon = (status?: string) => {
       return null;
   }
 };
-
 const CollapsibleText: React.FC<CollapsibleTextProps> = ({
   title,
   log,

@@ -66,7 +66,13 @@ const CodeEditor = (props: { roomId: string }) => {
         <HStack spacing={4}>
           <Box w="50%">
             <LanguageSelector language={language} onSelect={onSelect} />
-            {/* <button onClick={saveCode}>Save this code</button> */}
+            <button
+              onClick={() => {
+                postCode(props.roomId, value);
+              }}
+            >
+              Save this code
+            </button>
             <Editor
               options={{
                 minimap: {

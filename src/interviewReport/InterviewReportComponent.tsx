@@ -14,10 +14,25 @@ const InterviewReportComponent = () => {
   const [recordId, setRecordId] = useState<string | null>(null);
   const [roomId, setRoomId] = useState<string | null>(null);
 
-  const [interviewsDataList, setInterviewsDataList] = useState<any | null>(null);
-  const [selectedInterviewData, setSelectedInterviewData] = useState<any | null>(null);
+  // Data of the interviews
+  const [interviewsDataList, setInterviewsDataList] = useState<any | null>(
+    null
+  );
+  const [selectedInterviewData, setSelectedInterviewData] = useState<
+    any | null
+  >(null);
 
   const [videoURL, setVideoURL] = useState<string | null>(null);
+  const [meetingTranscript, setMeetingTranscript] = useState<string>(
+    "Waiting for transcription...(if it's the first time here, it could take up to 20 minutes). Try again later, reload the page or check the debug section."
+  );
+  const [actionItens, setActionItens] = useState([{ text: "Loading..." }]);
+  const [followUps, setFollowUps] = useState([{ text: "Loading..." }]);
+  const [questionsReport, setQuestionsReport] = useState([
+    { text: "Loading..." },
+  ]);
+  const [topics, setTopics] = useState([{ text: "Loading..." }]);
+  const [summary, setSummary] = useState([{ text: "Loading..." }]);
 
   // Estados de carregamento
   const [videoStatus, setVideoStatus] = useState<string>("loading");
@@ -36,7 +51,9 @@ const InterviewReportComponent = () => {
       console.log("Requesting interviews data list...");
       try {
         const request = await getRecordings();
-        const filteredData = request.data.filter((recording: any) => recording.roomId == room_id);
+        const filteredData = request.data.filter(
+          (recording: any) => recording.roomId == room_id
+        );
         setInterviewsDataList(filteredData);
       } catch (error) {
         console.error("Error getting interviews data list: ", error);
@@ -79,7 +96,121 @@ const InterviewReportComponent = () => {
     } else {
       setVideoStatus("failed");
     }
-  }, [videoURL]);
+
+    // First it tries to get the transcript for all the interviews, if it fails, it requests all the transcripts
+    interviewsDataList.forEach((interview: any) => {
+      getTranscript(interview.uuid)
+        .then((transcript) => {
+          console.log("Transcript for interview ", interview.uuid, ": VALID!");
+
+          // but shows only the selected interview transcript
+          if (interview.uuid == recordId) {
+            setMeetingTranscript(
+              transformTranscriptIntoHumanFormat(transcript)
+            );
+          }
+        })
+        .catch((error) => {
+          console.error(
+            "Error getting transcript for interview ",
+            interview.uuid,
+            ": ",
+            error
+          );
+          console.log("Requesting transcript for interview ", interview.uuid);
+          requestGenerateTranscript(interview.uuid)
+            .then(() =>
+              console.log(
+                "TRANSCRIPT REQUESTED FOR SUPERVIZ, U HAVE TO WAIT. UUID: ",
+                interview.uuid
+              )
+            )
+            .catch((error) =>
+              console.error(
+                "Error generating transcript request for interview ",
+                interview.uuid,
+                ": ",
+                error
+              )
+            );
+        });
+    });
+
+    // Get the action itens
+    getActionItems(recordId)
+      .then((actionItens) => {
+        console.log("Action itens for interview", recordId, ": VALID!");
+        setActionItens(actionItens);
+      })
+      .catch((error) => {
+        console.error(
+          "Error getting action itens for interview ",
+          recordId,
+          ": ",
+          error
+        );
+      });
+
+    // Get the follow-ups
+    getFollowUps(recordId)
+      .then((followUps) => {
+        console.log("Follow-ups for interview", recordId, ": VALID!");
+        setFollowUps(followUps);
+      })
+      .catch((error) => {
+        console.error(
+          "Error getting follow-ups for interview ",
+          recordId,
+          ": ",
+          error
+        );
+      });
+
+    // Get the questions
+    getQuestions(recordId)
+      .then((questions) => {
+        console.log("Questions for interview", recordId, ": VALID!");
+        setQuestionsReport(questions);
+      })
+      .catch((error) => {
+        console.error(
+          "Error getting questions for interview ",
+          recordId,
+          ": ",
+          error
+        );
+      });
+
+    // Get the topics
+    getTopics(recordId)
+      .then((topics) => {
+        console.log("Topics for interview", recordId, ": VALID!");
+        setTopics(topics);
+      })
+      .catch((error) => {
+        console.error(
+          "Error getting topics for interview ",
+          recordId,
+          ": ",
+          error
+        );
+      });
+
+    // Get the summary
+    getSummary(recordId)
+      .then((summary) => {
+        console.log("Summary for interview", recordId, ": VALID!");
+        setSummary(summary);
+      })
+      .catch((error) => {
+        console.error(
+          "Error getting summary for interview ",
+          recordId,
+          ": ",
+          error
+        );
+      });
+  }, [recordId]);
 
   return (
     <>
@@ -92,15 +223,24 @@ const InterviewReportComponent = () => {
               onChange={(e) => {
                 console.log("selectedInterviewData", e.target.value);
                 setSelectedInterviewData(
-                  interviewsDataList.find((interview: any) => interview.uuid === e.target.value)
+                  interviewsDataList.find(
+                    (interview: any) => interview.uuid === e.target.value
+                  )
                 );
               }}
-              value={recordId || ""}>
+              value={recordId || ""}
+            >
               <option value="" disabled>
                 Select an interview
               </option>
-            ))}
-          </select>
+              {interviewsDataList.map((interview: any) => (
+                <option key={interview.uuid} value={interview.uuid}>
+                  {new Date(interview.createdAt).toUTCString()} -{" "}
+                  {interview.uuid}
+                </option>
+              ))}
+            </select>
+          </>
         )}
       </div>
       {/* Interview Video */}
@@ -119,7 +259,11 @@ const InterviewReportComponent = () => {
 
       {/* Meeting Transcript */}
       <CollapsibleText title="Meeting transcript">
-        <textarea value={meetingTranscript} readOnly={true} style={{ width: 1000, height: 200 }} />
+        <textarea
+          value={meetingTranscript}
+          readOnly={true}
+          style={{ width: 1000, height: 200 }}
+        />
       </CollapsibleText>
 
       {/* Action itens */}
