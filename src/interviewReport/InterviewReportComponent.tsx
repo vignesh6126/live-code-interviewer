@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import getRecordings from "../services/getRecording";
 import requestGenerateTranscript from "../services/requestGenerateTranscript";
-import getRecordingsWithTranscriptionReady from "../services/getRecordingsWithTranscriptionReady";
+//import getRecordingsWithTranscriptionReady from "../services/getRecordingsWithTranscriptionReady";
 import getTranscript from "../services/getTranscript";
 import getQuestions from "../services/reportGetQuestions";
 import getActionItems from "../services/reportGetActionItens";
@@ -9,18 +9,15 @@ import getFollowUps from "../services/reportGetFollowUps";
 import getTopics from "../services/reportGetTopics";
 import getSummary from "../services/reportGetSummary";
 import CollapsibleText from "../components/CollapsibleText";
+import ReportActionItemComponent from "../components/ReportActionItemComponent";
 
 const InterviewReportComponent = () => {
   const [recordId, setRecordId] = useState<string | null>(null);
   const [roomId, setRoomId] = useState<string | null>(null);
 
   // Data of the interviews
-  const [interviewsDataList, setInterviewsDataList] = useState<any | null>(
-    null
-  );
-  const [selectedInterviewData, setSelectedInterviewData] = useState<
-    any | null
-  >(null);
+  const [interviewsDataList, setInterviewsDataList] = useState<any | null>(null);
+  const [selectedInterviewData, setSelectedInterviewData] = useState<any | null>(null);
 
   const [videoURL, setVideoURL] = useState<string | null>(null);
   const [meetingTranscript, setMeetingTranscript] = useState<string>(
@@ -28,9 +25,7 @@ const InterviewReportComponent = () => {
   );
   const [actionItens, setActionItens] = useState([{ text: "Loading..." }]);
   const [followUps, setFollowUps] = useState([{ text: "Loading..." }]);
-  const [questionsReport, setQuestionsReport] = useState([
-    { text: "Loading..." },
-  ]);
+  const [questionsReport, setQuestionsReport] = useState([{ text: "Loading..." }]);
   const [topics, setTopics] = useState([{ text: "Loading..." }]);
   const [summary, setSummary] = useState([{ text: "Loading..." }]);
 
@@ -51,9 +46,7 @@ const InterviewReportComponent = () => {
       console.log("Requesting interviews data list...");
       try {
         const request = await getRecordings();
-        const filteredData = request.data.filter(
-          (recording: any) => recording.roomId == room_id
-        );
+        const filteredData = request.data.filter((recording: any) => recording.roomId == room_id);
         setInterviewsDataList(filteredData);
       } catch (error) {
         console.error("Error getting interviews data list: ", error);
@@ -91,6 +84,11 @@ const InterviewReportComponent = () => {
 
   // Atualizar o status do vídeo
   useEffect(() => {
+    if (!recordId) {
+      console.warn("RecordId not available");
+      return;
+    }
+
     if (videoURL) {
       setVideoStatus("success");
     } else {
@@ -105,18 +103,13 @@ const InterviewReportComponent = () => {
 
           // but shows only the selected interview transcript
           if (interview.uuid == recordId) {
-            setMeetingTranscript(
-              transformTranscriptIntoHumanFormat(transcript)
-            );
+            setMeetingTranscript(transcript);
+            //!setMeetingTranscript(transformTranscriptIntoHumanFormat(transcript));
+            //TODO: missing the function
           }
         })
         .catch((error) => {
-          console.error(
-            "Error getting transcript for interview ",
-            interview.uuid,
-            ": ",
-            error
-          );
+          console.error("Error getting transcript for interview ", interview.uuid, ": ", error);
           console.log("Requesting transcript for interview ", interview.uuid);
           requestGenerateTranscript(interview.uuid)
             .then(() =>
@@ -143,12 +136,7 @@ const InterviewReportComponent = () => {
         setActionItens(actionItens);
       })
       .catch((error) => {
-        console.error(
-          "Error getting action itens for interview ",
-          recordId,
-          ": ",
-          error
-        );
+        console.error("Error getting action itens for interview ", recordId, ": ", error);
       });
 
     // Get the follow-ups
@@ -158,12 +146,7 @@ const InterviewReportComponent = () => {
         setFollowUps(followUps);
       })
       .catch((error) => {
-        console.error(
-          "Error getting follow-ups for interview ",
-          recordId,
-          ": ",
-          error
-        );
+        console.error("Error getting follow-ups for interview ", recordId, ": ", error);
       });
 
     // Get the questions
@@ -173,12 +156,7 @@ const InterviewReportComponent = () => {
         setQuestionsReport(questions);
       })
       .catch((error) => {
-        console.error(
-          "Error getting questions for interview ",
-          recordId,
-          ": ",
-          error
-        );
+        console.error("Error getting questions for interview ", recordId, ": ", error);
       });
 
     // Get the topics
@@ -188,12 +166,7 @@ const InterviewReportComponent = () => {
         setTopics(topics);
       })
       .catch((error) => {
-        console.error(
-          "Error getting topics for interview ",
-          recordId,
-          ": ",
-          error
-        );
+        console.error("Error getting topics for interview ", recordId, ": ", error);
       });
 
     // Get the summary
@@ -203,12 +176,7 @@ const InterviewReportComponent = () => {
         setSummary(summary);
       })
       .catch((error) => {
-        console.error(
-          "Error getting summary for interview ",
-          recordId,
-          ": ",
-          error
-        );
+        console.error("Error getting summary for interview ", recordId, ": ", error);
       });
   }, [recordId]);
 
@@ -223,20 +191,16 @@ const InterviewReportComponent = () => {
               onChange={(e) => {
                 console.log("selectedInterviewData", e.target.value);
                 setSelectedInterviewData(
-                  interviewsDataList.find(
-                    (interview: any) => interview.uuid === e.target.value
-                  )
+                  interviewsDataList.find((interview: any) => interview.uuid === e.target.value)
                 );
               }}
-              value={recordId || ""}
-            >
+              value={recordId || ""}>
               <option value="" disabled>
                 Select an interview
               </option>
               {interviewsDataList.map((interview: any) => (
                 <option key={interview.uuid} value={interview.uuid}>
-                  {new Date(interview.createdAt).toUTCString()} -{" "}
-                  {interview.uuid}
+                  {new Date(interview.createdAt).toUTCString()} - {interview.uuid}
                 </option>
               ))}
             </select>
@@ -259,11 +223,7 @@ const InterviewReportComponent = () => {
 
       {/* Meeting Transcript */}
       <CollapsibleText title="Meeting transcript">
-        <textarea
-          value={meetingTranscript}
-          readOnly={true}
-          style={{ width: 1000, height: 200 }}
-        />
+        <textarea value={meetingTranscript} readOnly={true} style={{ width: 1000, height: 200 }} />
       </CollapsibleText>
 
       {/* Action itens */}

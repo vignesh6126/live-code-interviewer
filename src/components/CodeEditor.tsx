@@ -68,9 +68,8 @@ const CodeEditor = (props: { roomId: string }) => {
             <LanguageSelector language={language} onSelect={onSelect} />
             <button
               onClick={() => {
-                postCode(props.roomId, value);
-              }}
-            >
+                //postCode(props.roomId, value);
+              }}>
               Save this code
             </button>
             <Editor
