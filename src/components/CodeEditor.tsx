@@ -16,14 +16,11 @@ import * as monaco from "monaco-editor";
 
 const ydoc = new Y.Doc();
 
-const CodeEditor = (props: { roomId: string }) => {
+const CodeEditor = () => {
   const editorRef = useRef<monaco.editor.IStandaloneCodeEditor | null>(null);
   const [value, setValue] = useState<string>("//Code goes here");
   const [language, setLanguage] = useState("javascript");
   const { provider } = useYjsProvider();
-
-  // test TODO: remove
-  props.roomId = "test";
 
   const onMount = (editor: monaco.editor.IStandaloneCodeEditor) => {
     editorRef.current = editor;
