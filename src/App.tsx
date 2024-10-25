@@ -17,11 +17,13 @@ function App() {
     <Box minH="100vh" bg="#0f0a19" color="gray.500" px={6} py={8}>
       {!userID && (
         <>
+          <h1>Live Code Interviewer</h1>
+          {/* TODO Gustavo: transformar em título, dar destaque na página, mas após logar, ficar de cantinho (ou sumir e aparecer outro componente semelkhante).*/}
           <Button
             onClick={() => {
               window.location.href = `/interviewReport/index.html?roomId=${roomID}`;
             }}>
-            Go to /interviewReport/index.html?roomId={roomID}
+            Interview Reports
           </Button>
           <UserInput setUserID={setUserID} setRoomID={setRoomID} />
         </>

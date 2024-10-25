@@ -113,7 +113,7 @@ const InterviewReportComponent = () => {
     interviewsDataList.forEach((interview: any) => {
       getTranscript(interview.uuid)
         .then((transcript) => {
-          console.log("Transcript for interview ", interview.uuid, ": VALID!");
+          console.warn("Transcript for interview ", interview.uuid, ": VALID!");
 
           // but shows only the selected interview transcript
           if (interview.uuid == recordId) {
@@ -126,19 +126,25 @@ const InterviewReportComponent = () => {
           console.log("Requesting transcript for interview ", interview.uuid);
           requestGenerateTranscript(interview.uuid)
             .then(() =>
-              console.log(
+              console.warn(
                 "TRANSCRIPT REQUESTED FOR SUPERVIZ, U HAVE TO WAIT. UUID: ",
                 interview.uuid
               )
             )
-            .catch((error) =>
+            .catch((error) => {
+              if (error.response.status == 409) {
+                console.warn(
+                  "Transcript already requested for SUPERVIZ. JUST wait, it could take up to 20 minutes! Interview ID",
+                  interview.uuid
+                );
+              }
               console.error(
-                "Error generating transcript request for interview ",
+                "Error requesting generating transcript from SUPERVIZ, it should be done manually or reloading the page. UUID: ",
                 interview.uuid,
                 ": ",
                 error
-              )
-            );
+              );
+            });
         });
     });
 
