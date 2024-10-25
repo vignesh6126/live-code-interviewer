@@ -84,7 +84,7 @@ const CollapsibleText: React.FC<CollapsibleTextProps> = ({ title, log, status, c
           )}
         </div>
       )}
-      {status && <h4 style={{ color: "#586069", marginTop: 12 }}>Status: {status}</h4>}
+      {/* {status && <h4 style={{ color: "#586069", marginTop: 12 }}>Status: {status}</h4>} */}
     </div>
   );
 };

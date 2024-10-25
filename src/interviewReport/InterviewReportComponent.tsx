@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import getRecordings from "../services/getRecording";
 import requestGenerateTranscript from "../services/requestGenerateTranscript";
-//import getRecordingsWithTranscriptionReady from "../services/getRecordingsWithTranscriptionReady";
 import getTranscript from "../services/getTranscript";
 import getQuestions from "../services/reportGetQuestions";
 import getActionItems from "../services/reportGetActionItens";
@@ -31,6 +30,12 @@ const InterviewReportComponent = () => {
 
   // Estados de carregamento
   const [videoStatus, setVideoStatus] = useState<string>("loading");
+  const [transcriptStatus, setTranscriptStatus] = useState<string>("running");
+  const [actionItemsStatus, setActionItemsStatus] = useState<string>("running");
+  const [followUpsStatus, setFollowUpsStatus] = useState<string>("running");
+  const [questionsStatus, setQuestionsStatus] = useState<string>("running");
+  const [topicsStatus, setTopicsStatus] = useState<string>("running");
+  const [summaryStatus, setSummaryStatus] = useState<string>("running");
 
   // Execute on first render
   useEffect(() => {
@@ -79,15 +84,11 @@ const InterviewReportComponent = () => {
 
   // Execute when the recordId changes
   useEffect(() => {
-    console.log("recordId changed to: ", recordId);
-  }, [recordId]);
-
-  // Atualizar o status do vídeo
-  useEffect(() => {
     if (!recordId) {
       console.warn("RecordId not available");
       return;
     }
+    console.log("recordId changed to: ", recordId);
 
     if (videoURL) {
       setVideoStatus("success");
@@ -118,10 +119,12 @@ const InterviewReportComponent = () => {
           // but shows only the selected interview transcript
           if (interview.uuid == recordId) {
             setMeetingTranscript(transformTranscriptIntoHumanFormat(transcript));
+            setTranscriptStatus("success");
             //TODO: missing the function
           }
         })
         .catch((error) => {
+          setTranscriptStatus("failed");
           console.error("Error getting transcript for interview ", interview.uuid, ": ", error);
           console.log("Requesting transcript for interview ", interview.uuid);
           requestGenerateTranscript(interview.uuid)
@@ -151,50 +154,60 @@ const InterviewReportComponent = () => {
     // Get the action itens
     getActionItems(recordId)
       .then((actionItens) => {
+        setActionItemsStatus("success");
         console.log("Action itens for interview", recordId, ": VALID!");
         setActionItens(actionItens);
       })
       .catch((error) => {
+        setActionItemsStatus("failed");
         console.error("Error getting action itens for interview ", recordId, ": ", error);
       });
 
     // Get the follow-ups
     getFollowUps(recordId)
       .then((followUps) => {
+        setFollowUpsStatus("success");
         console.log("Follow-ups for interview", recordId, ": VALID!");
         setFollowUps(followUps);
       })
       .catch((error) => {
+        setFollowUpsStatus("failed");
         console.error("Error getting follow-ups for interview ", recordId, ": ", error);
       });
 
     // Get the questions
     getQuestions(recordId)
       .then((questions) => {
+        setQuestionsStatus("success");
         console.log("Questions for interview", recordId, ": VALID!");
         setQuestionsReport(questions);
       })
       .catch((error) => {
+        setQuestionsStatus("failed");
         console.error("Error getting questions for interview ", recordId, ": ", error);
       });
 
     // Get the topics
     getTopics(recordId)
       .then((topics) => {
+        setTopicsStatus("success");
         console.log("Topics for interview", recordId, ": VALID!");
         setTopics(topics);
       })
       .catch((error) => {
+        setTopicsStatus("failed");
         console.error("Error getting topics for interview ", recordId, ": ", error);
       });
 
     // Get the summary
     getSummary(recordId)
       .then((summary) => {
+        setSummaryStatus("success");
         console.log("Summary for interview", recordId, ": VALID!");
         setSummary(summary);
       })
       .catch((error) => {
+        setSummaryStatus("failed");
         console.error("Error getting summary for interview ", recordId, ": ", error);
       });
   }, [recordId]);
@@ -202,7 +215,13 @@ const InterviewReportComponent = () => {
   return (
     <>
       <div>
-        <h3>Room - {roomId}</h3>
+        <h3>Room ID - </h3>
+        <input
+          type="text"
+          value={roomId || ""}
+          onChange={(e) => setRoomId(e.target.value)}
+          placeholder="Enter Room ID"
+        />
         {interviewsDataList && (
           <>
             - Record Id:
@@ -241,42 +260,34 @@ const InterviewReportComponent = () => {
       {/* TODO: The source code here */}
 
       {/* Meeting Transcript */}
-      <CollapsibleText title="Meeting transcript">
+      <CollapsibleText title="Meeting transcript" status={transcriptStatus}>
         <textarea value={meetingTranscript} readOnly={true} style={{ width: 1000, height: 200 }} />
       </CollapsibleText>
 
       {/* Action itens */}
-      <CollapsibleText title="Action itens">
+      <CollapsibleText title="Action itens" status={actionItemsStatus}>
         {actionItens.map((actionItem: any) => (
-          <ReportActionItemComponent text={actionItem.text} />
+          <ReportActionItemComponent key={actionItem.text} text={actionItem.text} />
         ))}
       </CollapsibleText>
-
-      {/* Follow-ups */}
-      <CollapsibleText title="Follow-ups">
+      <CollapsibleText title="Follow-ups" status={followUpsStatus}>
         {followUps.map((followUp: any) => (
-          <p>{followUp.text}</p>
+          <p key={followUp.text}>{followUp.text}</p>
         ))}
       </CollapsibleText>
-
-      {/* Questions */}
-      <CollapsibleText title="Questions">
+      <CollapsibleText title="Questions" status={questionsStatus}>
         {questionsReport.map((question: any) => (
-          <p>{question.text}</p>
+          <p key={question.text}>{question.text}</p>
         ))}
       </CollapsibleText>
-
-      {/* Topics */}
-      <CollapsibleText title="Topics">
+      <CollapsibleText title="Topics" status={topicsStatus}>
         {topics.map((topic: any) => (
-          <p>{topic.text}</p>
+          <p key={topic.text}>{topic.text}</p>
         ))}
       </CollapsibleText>
-
-      {/* Summary */}
-      <CollapsibleText title="Summary">
+      <CollapsibleText title="Summary" status={summaryStatus}>
         {summary.map((summaryItem: any) => (
-          <p>{summaryItem.text}</p>
+          <p key={summaryItem.text}>{summaryItem.text}</p>
         ))}
       </CollapsibleText>
     </>
