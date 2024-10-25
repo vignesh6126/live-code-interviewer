@@ -9,6 +9,8 @@ import getTopics from "../services/reportGetTopics";
 import getSummary from "../services/reportGetSummary";
 import CollapsibleText from "../components/CollapsibleText";
 import ReportActionItemComponent from "../components/ReportActionItemComponent";
+import { firestore } from "../main";
+import { collection, getDocs } from "firebase/firestore";
 
 const InterviewReportComponent = () => {
   const [recordId, setRecordId] = useState<string | null>(null);
@@ -19,6 +21,7 @@ const InterviewReportComponent = () => {
   const [selectedInterviewData, setSelectedInterviewData] = useState<any | null>(null);
 
   const [videoURL, setVideoURL] = useState<string | null>(null);
+  const [codes, setCodes] = useState<any | null>(null);
   const [meetingTranscript, setMeetingTranscript] = useState<string>(
     "Waiting for transcription...(if it's the first time here, it could take up to 20 minutes). Try again later, reload the page or check the debug section."
   );
@@ -30,6 +33,7 @@ const InterviewReportComponent = () => {
 
   // Estados de carregamento
   const [videoStatus, setVideoStatus] = useState<string>("loading");
+  const [codesStatus, setCodesStatus] = useState<string>("loading");
   const [transcriptStatus, setTranscriptStatus] = useState<string>("running");
   const [actionItemsStatus, setActionItemsStatus] = useState<string>("running");
   const [followUpsStatus, setFollowUpsStatus] = useState<string>("running");
@@ -46,18 +50,39 @@ const InterviewReportComponent = () => {
 
   // Execute when the roomId changes
   useEffect(() => {
-    // Execute wehn the roomId changes
+    if (!roomId) {
+      console.log("Room ID invalid");
+      return;
+    }
     async function getInterviewsDataList(room_id: string | null) {
       console.log("Requesting interviews data list...");
       try {
         const request = await getRecordings();
         const filteredData = request.data.filter((recording: any) => recording.roomId == room_id);
         setInterviewsDataList(filteredData);
+        setVideoStatus("sucess");
       } catch (error) {
+        setVideoStatus("failed");
         console.error("Error getting interviews data list: ", error);
       }
     }
     getInterviewsDataList(roomId);
+
+    async function getCodes(room_id: string) {
+      console.log("Requesting codes...");
+      try {
+        const collectionReference = collection(firestore, `codes/${room_id}/versions`);
+        const querySnapshot = await getDocs(collectionReference);
+        const codesData = querySnapshot.docs.map((doc) => doc.data());
+        setCodes(codesData);
+        setCodesStatus("success");
+        console.log("Codes data:", codesData);
+      } catch (error) {
+        setCodesStatus("failed");
+        console.error("Error getting codes: ", error);
+      }
+    }
+    getCodes(roomId);
   }, [roomId]);
 
   //Exectue when the interviewsDataList changes
@@ -89,12 +114,6 @@ const InterviewReportComponent = () => {
       return;
     }
     console.log("recordId changed to: ", recordId);
-
-    if (videoURL) {
-      setVideoStatus("success");
-    } else {
-      setVideoStatus("failed");
-    }
 
     function transformTranscriptIntoHumanFormat(transcriptBrute: any) {
       let transcript = "";
@@ -257,7 +276,22 @@ const InterviewReportComponent = () => {
         )}
       </CollapsibleText>
 
-      {/* TODO: The source code here */}
+      {/* Codes */}
+      <CollapsibleText title="Codes" status={codesStatus}>
+        {/* map the codes here on text areas */}
+        {codes ? (
+          Object.keys(codes).map((key) => (
+            <textarea
+              key={key}
+              value={codes[key].code}
+              readOnly={true}
+              style={{ width: 1000, height: 200 }}
+            />
+          ))
+        ) : (
+          <p>Codes not available</p>
+        )}
+      </CollapsibleText>
 
       {/* Meeting Transcript */}
       <CollapsibleText title="Meeting transcript" status={transcriptStatus}>

@@ -11,8 +11,7 @@ import * as monaco from "monaco-editor";
 import { firestore } from "../main";
 import { doc, setDoc } from "firebase/firestore";
 
-// TODO: Save multiples code for the same room
-//let savedCodeCode = 0;
+let savedCodeCode = 0;
 
 const ydoc = new Y.Doc();
 const CodeEditor = (props: { roomId: string }) => {
@@ -49,7 +48,7 @@ const CodeEditor = (props: { roomId: string }) => {
   }, [provider]);
 
   async function saveCode() {
-    const docReference = doc(firestore, `codes/${props.roomId}`);
+    const docReference = doc(firestore, `codes/${props.roomId}/versions/${savedCodeCode++}`);
     const docData = {
       code: value,
     };
@@ -64,7 +63,7 @@ const CodeEditor = (props: { roomId: string }) => {
         <HStack spacing={4}>
           <Box w="50%">
             <LanguageSelector language={language} onSelect={onSelect} />
-            <button onClick={saveCode}>Save Code</button>
+            <button onClick={saveCode}>Save This Code</button>
             <Editor
               options={{
                 minimap: {
