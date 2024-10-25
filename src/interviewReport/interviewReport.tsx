@@ -1,10 +1,16 @@
 import React from "react";
-import ReactDOM from "react-dom";
+import { createRoot } from "react-dom/client";
 import InterviewReportComponent from "./InterviewReportComponent";
 
-ReactDOM.render(
-  <React.StrictMode>
-    <InterviewReportComponent />
-  </React.StrictMode>,
-  document.getElementById("root")
-);
+const rootElement = document.getElementById("root");
+
+if (rootElement) {
+  const root = createRoot(rootElement);
+  root.render(
+    <React.StrictMode>
+      <InterviewReportComponent />
+    </React.StrictMode>
+  );
+} else {
+  console.error("Root element not found");
+}
