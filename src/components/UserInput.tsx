@@ -13,11 +13,14 @@ const UserInput = ({ setUserID, setRoomID }: any) => {
   }, []);
 
   const generateSimpleId = () => {
-    const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    const characters =
+      "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
     let result = "";
     const length = 4;
     for (let i = 0; i < length; i++) {
-      result += characters.charAt(Math.floor(Math.random() * characters.length));
+      result += characters.charAt(
+        Math.floor(Math.random() * characters.length)
+      );
     }
     return result;
   };
@@ -54,10 +57,18 @@ const UserInput = ({ setUserID, setRoomID }: any) => {
         />
       </div>
       <div className={styles.groupButtons}>
-        <Button colorScheme="gray" className={styles.defaultButtons} onClick={handleSubmit}>
+        <Button
+          colorScheme="gray"
+          className={styles.defaultButtons}
+          onClick={handleSubmit}
+        >
           Iniciar
         </Button>
-        <Button colorScheme="gray" className={styles.defaultButtons} onClick={handleGenerateRoomID}>
+        <Button
+          colorScheme="gray"
+          className={styles.defaultButtons}
+          onClick={handleGenerateRoomID}
+        >
           Gerar Room ID
         </Button>
       </div>

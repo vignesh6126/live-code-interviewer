@@ -7,7 +7,12 @@ interface CollapsibleTextProps {
   children?: ReactNode;
 }
 
-const CollapsibleText: React.FC<CollapsibleTextProps> = ({ title, log, status, children }) => {
+const CollapsibleText: React.FC<CollapsibleTextProps> = ({
+  title,
+  log,
+  status,
+  children,
+}) => {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
