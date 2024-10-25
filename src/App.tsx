@@ -32,7 +32,7 @@ function App() {
           group={{ id: roomID, name: "Your Group Name" }}
           participant={{ id: userID, name: userID }}
           roomId={roomID}>
-          <CodeEditor />
+          <CodeEditor roomId={roomID} />
           <VideoRoom />
         </SuperVizRoomProvider>
       )}

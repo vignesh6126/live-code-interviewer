@@ -95,6 +95,20 @@ const InterviewReportComponent = () => {
       setVideoStatus("failed");
     }
 
+    function transformTranscriptIntoHumanFormat(transcriptBrute: any) {
+      let transcript = "";
+      transcriptBrute.forEach((element: any) => {
+        transcript +=
+          new Date(element.startTime).toUTCString() +
+          " - " +
+          element.username +
+          ": " +
+          element.content +
+          "\n";
+      });
+      return transcript;
+    }
+
     // First it tries to get the transcript for all the interviews, if it fails, it requests all the transcripts
     interviewsDataList.forEach((interview: any) => {
       getTranscript(interview.uuid)
@@ -103,8 +117,7 @@ const InterviewReportComponent = () => {
 
           // but shows only the selected interview transcript
           if (interview.uuid == recordId) {
-            setMeetingTranscript(transcript);
-            //!setMeetingTranscript(transformTranscriptIntoHumanFormat(transcript));
+            setMeetingTranscript(transformTranscriptIntoHumanFormat(transcript));
             //TODO: missing the function
           }
         })
