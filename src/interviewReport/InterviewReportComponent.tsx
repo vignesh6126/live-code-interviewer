@@ -315,6 +315,7 @@ const InterviewReportComponent = () => {
           </>
         )}
       </div>
+
       {/* Interview Video */}
       <CollapsibleText title="Interview Video" status={videoStatus}>
         {videoURL ? (
@@ -349,24 +350,20 @@ const InterviewReportComponent = () => {
         )}
       </CollapsibleText>
 
-      {/* Meeting Transcript */}
+      <CollapsibleText title="Summary" status={summaryStatus}>
+        {summary.map((summaryItem: any) => (
+          <p key={summaryItem.text}>{summaryItem.text}</p>
+        ))}
+      </CollapsibleText>
+
       <CollapsibleText title="Meeting transcript" status={transcriptStatus}>
         <textarea
           value={meetingTranscript}
           readOnly={true}
           style={{ width: "100%", height: 200, color: "#fff" }}
-        />
+        />      
       </CollapsibleText>
 
-      {/* Action itens */}
-      <CollapsibleText title="Action itens" status={actionItemsStatus}>
-        {actionItens.map((actionItem: any) => (
-          <ReportActionItemComponent
-            key={actionItem.text}
-            text={actionItem.text}
-          />
-        ))}
-      </CollapsibleText>
       <CollapsibleText title="Follow-ups" status={followUpsStatus}>
         {followUps.map((followUp: any) => (
           <p key={followUp.text}>{followUp.text}</p>
@@ -382,9 +379,10 @@ const InterviewReportComponent = () => {
           <p key={topic.text}>{topic.text}</p>
         ))}
       </CollapsibleText>
-      <CollapsibleText title="Summary" status={summaryStatus}>
-        {summary.map((summaryItem: any) => (
-          <p key={summaryItem.text}>{summaryItem.text}</p>
+
+      <CollapsibleText title="Action itens" status={actionItemsStatus}>
+        {actionItens.map((actionItem: any) => (
+          <ReportActionItemComponent key={actionItem.text} text={actionItem.text} />
         ))}
       </CollapsibleText>
     </div>
