@@ -9,6 +9,7 @@ import getTopics from "../services/reportGetTopics";
 import getSummary from "../services/reportGetSummary";
 import CollapsibleText from "../components/CollapsibleText";
 import ReportActionItemComponent from "../components/ReportActionItemComponent";
+import styles from "../styles/reportHeader.module.css";
 import { firestore } from "../main";
 import { collection, getDocs } from "firebase/firestore";
 
@@ -232,19 +233,22 @@ const InterviewReportComponent = () => {
   }, [recordId]);
 
   return (
-    <>
-      <div>
-        <h3>Room ID - </h3>
-        <input
-          type="text"
-          value={roomId || ""}
-          onChange={(e) => setRoomId(e.target.value)}
-          placeholder="Enter Room ID"
-        />
+    <div className={styles.container}>
+      <div className={styles.reportHeader}>
+        <div className={styles.reportHeaderContent}>
+          <h3>Room ID - </h3>
+          <input
+            type="text"
+            value={roomId || ""}
+            onChange={(e) => setRoomId(e.target.value)}
+            placeholder="Enter Room ID"
+          />
+        </div>
         {interviewsDataList && (
           <>
-            - Record Id:
+            Record Id:
             <select
+              className={styles.select}
               onChange={(e) => {
                 console.log("selectedInterviewData", e.target.value);
                 setSelectedInterviewData(
@@ -286,7 +290,12 @@ const InterviewReportComponent = () => {
               key={key}
               value={codes[key].code}
               readOnly={true}
-              style={{ width: 1000, height: 200 }}
+              style={{
+                width: "100%",
+                borderRadius: "8px",
+                padding: "12px",
+                height: 200,
+              }}
             />
           ))
         ) : (
@@ -301,7 +310,11 @@ const InterviewReportComponent = () => {
       </CollapsibleText>
 
       <CollapsibleText title="Meeting transcript" status={transcriptStatus}>
-        <textarea value={meetingTranscript} readOnly={true} style={{ width: 1000, height: 200 }} />
+        <textarea
+          value={meetingTranscript}
+          readOnly={true}
+          style={{ width: "100%", height: 200, color: "#fff" }}
+        />
       </CollapsibleText>
 
       <CollapsibleText title="Follow-ups" status={followUpsStatus}>
@@ -309,13 +322,11 @@ const InterviewReportComponent = () => {
           <p key={followUp.text}>{followUp.text}</p>
         ))}
       </CollapsibleText>
-
       <CollapsibleText title="Questions" status={questionsStatus}>
         {questionsReport.map((question: any) => (
           <p key={question.text}>{question.text}</p>
         ))}
       </CollapsibleText>
-
       <CollapsibleText title="Topics" status={topicsStatus}>
         {topics.map((topic: any) => (
           <p key={topic.text}>{topic.text}</p>
@@ -327,7 +338,7 @@ const InterviewReportComponent = () => {
           <ReportActionItemComponent key={actionItem.text} text={actionItem.text} />
         ))}
       </CollapsibleText>
-    </>
+    </div>
   );
 };
 
