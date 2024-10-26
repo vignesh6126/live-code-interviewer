@@ -1,5 +1,5 @@
 import { useRef, useState, useEffect } from "react";
-import { Box, HStack } from "@chakra-ui/react";
+import { Box, HStack, Button, useToast } from "@chakra-ui/react";
 import { Editor } from "@monaco-editor/react";
 import LanguageSelector from "./LanguageSelector";
 import { CODE_SNIPPETS } from "../constants";
@@ -10,17 +10,16 @@ import { MonacoBinding } from "y-monaco";
 import * as monaco from "monaco-editor";
 import { firestore } from "../main";
 import { doc, setDoc } from "firebase/firestore";
-import styles from "../styles/buttons.module.css";
-import { Button } from "@chakra-ui/react";
 
 let savedCodeCode = 0;
-
 const ydoc = new Y.Doc();
+
 const CodeEditor = (props: { roomId: string }) => {
   const editorRef = useRef<monaco.editor.IStandaloneCodeEditor | null>(null);
   const [value, setValue] = useState<string>("//Code goes here");
   const [language, setLanguage] = useState("javascript");
   const { provider } = useYjsProvider();
+  const toast = useToast(); 
 
   const onMount = (editor: monaco.editor.IStandaloneCodeEditor) => {
     editorRef.current = editor;
@@ -51,29 +50,57 @@ const CodeEditor = (props: { roomId: string }) => {
 
   async function saveCode() {
     const docReference = doc(firestore, `codes/${props.roomId}/versions/${savedCodeCode++}`);
-    const docData = {
-      code: value,
-    };
-    setDoc(docReference, docData);
+    const docData = { code: value };
 
-    console.log("Code saved");
+    try {
+      await setDoc(docReference, docData);
+      toast({
+        title: "Code saved.",
+        description: "Your code has been saved successfully.",
+        status: "success",
+        duration: 3000,
+        isClosable: true,
+      });
+    } catch (error) {
+      toast({
+        title: "Error saving code.",
+        description: "There was an error while saving your code.",
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
+      console.error("Error saving code:", error);
+    }
   }
 
   return (
     <YjsProvider doc={ydoc}>
       <Box>
-        <HStack spacing={4}>
+        <HStack spacing={4} align="flex-start">
           <Box w="50%">
-            <LanguageSelector language={language} onSelect={onSelect} />
-            <Button className={styles.defaultInputs} colorScheme="teal" onClick={saveCode}>
-              Save This Code
-            </Button>
+            <HStack justify="space-between" mb={4}>
+              <Box display="flex" alignItems="center" w="100%" justifyContent="space-between">
+                <LanguageSelector language={language} onSelect={onSelect} />
+                <Button
+                  sx={{
+                    color: "#ffffff",
+                    marginTop: "1.6rem",
+                    marginRight: "1.5rem",
+                    fontSize: "1rem",
+                    borderRadius: "6px",
+                    transition: "background-color 0.2s ease-in-out",
+                    _hover: {
+                      bg: "rgba(248,248,255, 0.3)",
+                    },
+                  }}
+                  onClick={saveCode}
+                >
+                  Save Code
+                </Button>
+              </Box>
+            </HStack>
             <Editor
-              options={{
-                minimap: {
-                  enabled: false,
-                },
-              }}
+              options={{ minimap: { enabled: false } }}
               height="75vh"
               theme="vs-dark"
               language={language}
