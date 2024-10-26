@@ -13,14 +13,11 @@ const UserInput = ({ setUserID, setRoomID }: any) => {
   }, []);
 
   const generateSimpleId = () => {
-    const characters =
-      "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
     let result = "";
     const length = 4;
     for (let i = 0; i < length; i++) {
-      result += characters.charAt(
-        Math.floor(Math.random() * characters.length)
-      );
+      result += characters.charAt(Math.floor(Math.random() * characters.length));
     }
     return result;
   };
@@ -39,11 +36,13 @@ const UserInput = ({ setUserID, setRoomID }: any) => {
   return (
     <div className={styles.groups}>
       <div className={styles.groupInputs}>
+        {/* TODO Gustavo: transformar em título, dar destaque na página, mas após logar, ficar de cantinho (ou sumir e aparecer outro componente semelkhante).*/}
+        <h2 style={{ color: "white", fontSize: 24, marginBottom: 24 }}>Live Code Interviewer</h2>
         <Input
           className={styles.defaultInputs}
           type="text"
           width="auto"
-          placeholder="Username"
+          placeholder="Name"
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
         />
@@ -51,25 +50,24 @@ const UserInput = ({ setUserID, setRoomID }: any) => {
           type="text"
           className={styles.defaultInputs}
           width="auto"
-          placeholder="Room ID"
+          placeholder="Unique Room ID"
           value={roomID}
           onChange={(e) => setInputRoomID(e.target.value)}
         />
       </div>
       <div className={styles.groupButtons}>
-        <Button
-          colorScheme="gray"
-          className={styles.defaultButtons}
-          onClick={handleSubmit}
-        >
-          Iniciar
+        <Button colorScheme="gray" className={styles.defaultButtons} onClick={handleSubmit}>
+          Start
+        </Button>
+        <Button colorScheme="gray" className={styles.defaultButtons} onClick={handleGenerateRoomID}>
+          Generate Room ID
         </Button>
         <Button
-          colorScheme="gray"
           className={styles.defaultButtons}
-          onClick={handleGenerateRoomID}
-        >
-          Gerar Room ID
+          onClick={() => {
+            window.location.href = `/interviewReport/index.html?roomId=${roomID}`;
+          }}>
+          Interview Reports
         </Button>
       </div>
     </div>

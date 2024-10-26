@@ -264,6 +264,7 @@ const InterviewReportComponent = () => {
           </>
         )}
       </div>
+
       {/* Interview Video */}
       <CollapsibleText title="Interview Video" status={videoStatus}>
         {videoURL ? (
@@ -293,35 +294,37 @@ const InterviewReportComponent = () => {
         )}
       </CollapsibleText>
 
-      {/* Meeting Transcript */}
+      <CollapsibleText title="Summary" status={summaryStatus}>
+        {summary.map((summaryItem: any) => (
+          <p key={summaryItem.text}>{summaryItem.text}</p>
+        ))}
+      </CollapsibleText>
+
       <CollapsibleText title="Meeting transcript" status={transcriptStatus}>
         <textarea value={meetingTranscript} readOnly={true} style={{ width: 1000, height: 200 }} />
       </CollapsibleText>
 
-      {/* Action itens */}
-      <CollapsibleText title="Action itens" status={actionItemsStatus}>
-        {actionItens.map((actionItem: any) => (
-          <ReportActionItemComponent key={actionItem.text} text={actionItem.text} />
-        ))}
-      </CollapsibleText>
       <CollapsibleText title="Follow-ups" status={followUpsStatus}>
         {followUps.map((followUp: any) => (
           <p key={followUp.text}>{followUp.text}</p>
         ))}
       </CollapsibleText>
+
       <CollapsibleText title="Questions" status={questionsStatus}>
         {questionsReport.map((question: any) => (
           <p key={question.text}>{question.text}</p>
         ))}
       </CollapsibleText>
+
       <CollapsibleText title="Topics" status={topicsStatus}>
         {topics.map((topic: any) => (
           <p key={topic.text}>{topic.text}</p>
         ))}
       </CollapsibleText>
-      <CollapsibleText title="Summary" status={summaryStatus}>
-        {summary.map((summaryItem: any) => (
-          <p key={summaryItem.text}>{summaryItem.text}</p>
+
+      <CollapsibleText title="Action itens" status={actionItemsStatus}>
+        {actionItens.map((actionItem: any) => (
+          <ReportActionItemComponent key={actionItem.text} text={actionItem.text} />
         ))}
       </CollapsibleText>
     </>

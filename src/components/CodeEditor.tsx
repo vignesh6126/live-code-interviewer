@@ -10,6 +10,8 @@ import { MonacoBinding } from "y-monaco";
 import * as monaco from "monaco-editor";
 import { firestore } from "../main";
 import { doc, setDoc } from "firebase/firestore";
+import styles from "../styles/buttons.module.css";
+import { Button } from "@chakra-ui/react";
 
 let savedCodeCode = 0;
 
@@ -63,7 +65,9 @@ const CodeEditor = (props: { roomId: string }) => {
         <HStack spacing={4}>
           <Box w="50%">
             <LanguageSelector language={language} onSelect={onSelect} />
-            <button onClick={saveCode}>Save This Code</button>
+            <Button className={styles.defaultInputs} colorScheme="teal" onClick={saveCode}>
+              Save This Code
+            </Button>
             <Editor
               options={{
                 minimap: {
