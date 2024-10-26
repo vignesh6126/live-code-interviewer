@@ -9,6 +9,7 @@ import getTopics from "../services/reportGetTopics";
 import getSummary from "../services/reportGetSummary";
 import CollapsibleText from "../components/CollapsibleText";
 import ReportActionItemComponent from "../components/ReportActionItemComponent";
+import styles from "../styles/reportHeader.module.css";
 import { firestore } from "../main";
 import { collection, getDocs } from "firebase/firestore";
 
@@ -232,19 +233,22 @@ const InterviewReportComponent = () => {
   }, [recordId]);
 
   return (
-    <>
-      <div>
-        <h3>Room ID - </h3>
-        <input
-          type="text"
-          value={roomId || ""}
-          onChange={(e) => setRoomId(e.target.value)}
-          placeholder="Enter Room ID"
-        />
+    <div className={styles.container}>
+      <div className={styles.reportHeader}>
+        <div className={styles.reportHeaderContent}>
+          <h3>Room ID - </h3>
+          <input
+            type="text"
+            value={roomId || ""}
+            onChange={(e) => setRoomId(e.target.value)}
+            placeholder="Enter Room ID"
+          />
+        </div>
         {interviewsDataList && (
           <>
-            - Record Id:
+            Record Id:
             <select
+              className={styles.select}
               onChange={(e) => {
                 console.log("selectedInterviewData", e.target.value);
                 setSelectedInterviewData(
@@ -264,6 +268,7 @@ const InterviewReportComponent = () => {
           </>
         )}
       </div>
+
       {/* Interview Video */}
       <CollapsibleText title="Interview Video" status={videoStatus}>
         {videoURL ? (
@@ -285,7 +290,12 @@ const InterviewReportComponent = () => {
               key={key}
               value={codes[key].code}
               readOnly={true}
-              style={{ width: 1000, height: 200 }}
+              style={{
+                width: "100%",
+                borderRadius: "8px",
+                padding: "12px",
+                height: 200,
+              }}
             />
           ))
         ) : (
@@ -293,17 +303,20 @@ const InterviewReportComponent = () => {
         )}
       </CollapsibleText>
 
-      {/* Meeting Transcript */}
-      <CollapsibleText title="Meeting transcript" status={transcriptStatus}>
-        <textarea value={meetingTranscript} readOnly={true} style={{ width: 1000, height: 200 }} />
-      </CollapsibleText>
-
-      {/* Action itens */}
-      <CollapsibleText title="Action itens" status={actionItemsStatus}>
-        {actionItens.map((actionItem: any) => (
-          <ReportActionItemComponent key={actionItem.text} text={actionItem.text} />
+      <CollapsibleText title="Summary" status={summaryStatus}>
+        {summary.map((summaryItem: any) => (
+          <p key={summaryItem.text}>{summaryItem.text}</p>
         ))}
       </CollapsibleText>
+
+      <CollapsibleText title="Meeting transcript" status={transcriptStatus}>
+        <textarea
+          value={meetingTranscript}
+          readOnly={true}
+          style={{ width: "100%", height: 200, color: "#fff" }}
+        />
+      </CollapsibleText>
+
       <CollapsibleText title="Follow-ups" status={followUpsStatus}>
         {followUps.map((followUp: any) => (
           <p key={followUp.text}>{followUp.text}</p>
@@ -319,12 +332,13 @@ const InterviewReportComponent = () => {
           <p key={topic.text}>{topic.text}</p>
         ))}
       </CollapsibleText>
-      <CollapsibleText title="Summary" status={summaryStatus}>
-        {summary.map((summaryItem: any) => (
-          <p key={summaryItem.text}>{summaryItem.text}</p>
+
+      <CollapsibleText title="Action itens" status={actionItemsStatus}>
+        {actionItens.map((actionItem: any) => (
+          <ReportActionItemComponent key={actionItem.text} text={actionItem.text} />
         ))}
       </CollapsibleText>
-    </>
+    </div>
   );
 };
 

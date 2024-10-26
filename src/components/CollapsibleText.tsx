@@ -32,9 +32,10 @@ const CollapsibleText: React.FC<CollapsibleTextProps> = ({ title, log, status, c
   return (
     <div
       style={{
-        backgroundColor: "#f6f8fa",
+        color: "#fff",
+        backgroundColor: "#0f0a19",
         padding: 16,
-        margin: 12,
+        margin: 16,
         borderRadius: 6,
         border: "1px solid #d1d5da",
       }}>
