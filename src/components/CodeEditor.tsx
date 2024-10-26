@@ -19,7 +19,7 @@ const CodeEditor = (props: { roomId: string }) => {
   const [value, setValue] = useState<string>("//Code goes here");
   const [language, setLanguage] = useState("javascript");
   const { provider } = useYjsProvider();
-  const toast = useToast(); 
+  const toast = useToast();
 
   const onMount = (editor: monaco.editor.IStandaloneCodeEditor) => {
     editorRef.current = editor;
@@ -49,7 +49,10 @@ const CodeEditor = (props: { roomId: string }) => {
   }, [provider]);
 
   async function saveCode() {
-    const docReference = doc(firestore, `codes/${props.roomId}/versions/${savedCodeCode++}`);
+    const docReference = doc(
+      firestore,
+      `codes/${props.roomId}/versions/${savedCodeCode++}`
+    );
     const docData = { code: value };
 
     try {
@@ -79,7 +82,13 @@ const CodeEditor = (props: { roomId: string }) => {
         <HStack spacing={4} align="flex-start">
           <Box w="50%">
             <HStack justify="space-between" mb={4}>
-              <Box display="flex" alignItems="center" w="100%" justifyContent="space-between">
+              <Box
+                display="flex"
+                flexDirection="row"
+                alignItems="center"
+                w="100%"
+                justifyContent="space-between"
+              >
                 <LanguageSelector language={language} onSelect={onSelect} />
                 <Button
                   sx={{
@@ -101,7 +110,7 @@ const CodeEditor = (props: { roomId: string }) => {
             </HStack>
             <Editor
               options={{ minimap: { enabled: false } }}
-              height="75vh"
+              height="70vh"
               theme="vs-dark"
               language={language}
               defaultValue={CODE_SNIPPETS[language]}

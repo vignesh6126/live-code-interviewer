@@ -48,7 +48,8 @@ const Output = ({ editorRef, language }: any) => {
       </div>
 
       <Box
-        height="75vh"
+        height="70vh"
+        marginTop={4}
         p={2}
         color={isError ? "red.400" : ""}
         border="1px solid"
