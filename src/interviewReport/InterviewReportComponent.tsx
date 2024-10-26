@@ -18,8 +18,12 @@ const InterviewReportComponent = () => {
   const [roomId, setRoomId] = useState<string | null>(null);
 
   // Data of the interviews
-  const [interviewsDataList, setInterviewsDataList] = useState<any | null>(null);
-  const [selectedInterviewData, setSelectedInterviewData] = useState<any | null>(null);
+  const [interviewsDataList, setInterviewsDataList] = useState<any | null>(
+    null
+  );
+  const [selectedInterviewData, setSelectedInterviewData] = useState<
+    any | null
+  >(null);
 
   const [videoURL, setVideoURL] = useState<string | null>(null);
   const [codes, setCodes] = useState<any | null>(null);
@@ -28,7 +32,9 @@ const InterviewReportComponent = () => {
   );
   const [actionItens, setActionItens] = useState([{ text: "Loading..." }]);
   const [followUps, setFollowUps] = useState([{ text: "Loading..." }]);
-  const [questionsReport, setQuestionsReport] = useState([{ text: "Loading..." }]);
+  const [questionsReport, setQuestionsReport] = useState([
+    { text: "Loading..." },
+  ]);
   const [topics, setTopics] = useState([{ text: "Loading..." }]);
   const [summary, setSummary] = useState([{ text: "Loading..." }]);
 
@@ -59,7 +65,9 @@ const InterviewReportComponent = () => {
       console.log("Requesting interviews data list...");
       try {
         const request = await getRecordings();
-        const filteredData = request.data.filter((recording: any) => recording.roomId == room_id);
+        const filteredData = request.data.filter(
+          (recording: any) => recording.roomId == room_id
+        );
         setInterviewsDataList(filteredData);
         setVideoStatus("sucess");
       } catch (error) {
@@ -72,7 +80,10 @@ const InterviewReportComponent = () => {
     async function getCodes(room_id: string) {
       console.log("Requesting codes...");
       try {
-        const collectionReference = collection(firestore, `codes/${room_id}/versions`);
+        const collectionReference = collection(
+          firestore,
+          `codes/${room_id}/versions`
+        );
         const querySnapshot = await getDocs(collectionReference);
         const codesData = querySnapshot.docs.map((doc) => doc.data());
         setCodes(codesData);
@@ -138,14 +149,21 @@ const InterviewReportComponent = () => {
 
           // but shows only the selected interview transcript
           if (interview.uuid == recordId) {
-            setMeetingTranscript(transformTranscriptIntoHumanFormat(transcript));
+            setMeetingTranscript(
+              transformTranscriptIntoHumanFormat(transcript)
+            );
             setTranscriptStatus("success");
             //TODO: missing the function
           }
         })
         .catch((error) => {
           setTranscriptStatus("failed");
-          console.error("Error getting transcript for interview ", interview.uuid, ": ", error);
+          console.error(
+            "Error getting transcript for interview ",
+            interview.uuid,
+            ": ",
+            error
+          );
           console.log("Requesting transcript for interview ", interview.uuid);
           requestGenerateTranscript(interview.uuid)
             .then(() =>
@@ -180,7 +198,12 @@ const InterviewReportComponent = () => {
       })
       .catch((error) => {
         setActionItemsStatus("failed");
-        console.error("Error getting action itens for interview ", recordId, ": ", error);
+        console.error(
+          "Error getting action itens for interview ",
+          recordId,
+          ": ",
+          error
+        );
       });
 
     // Get the follow-ups
@@ -192,7 +215,12 @@ const InterviewReportComponent = () => {
       })
       .catch((error) => {
         setFollowUpsStatus("failed");
-        console.error("Error getting follow-ups for interview ", recordId, ": ", error);
+        console.error(
+          "Error getting follow-ups for interview ",
+          recordId,
+          ": ",
+          error
+        );
       });
 
     // Get the questions
@@ -204,7 +232,12 @@ const InterviewReportComponent = () => {
       })
       .catch((error) => {
         setQuestionsStatus("failed");
-        console.error("Error getting questions for interview ", recordId, ": ", error);
+        console.error(
+          "Error getting questions for interview ",
+          recordId,
+          ": ",
+          error
+        );
       });
 
     // Get the topics
@@ -216,7 +249,12 @@ const InterviewReportComponent = () => {
       })
       .catch((error) => {
         setTopicsStatus("failed");
-        console.error("Error getting topics for interview ", recordId, ": ", error);
+        console.error(
+          "Error getting topics for interview ",
+          recordId,
+          ": ",
+          error
+        );
       });
 
     // Get the summary
@@ -228,7 +266,12 @@ const InterviewReportComponent = () => {
       })
       .catch((error) => {
         setSummaryStatus("failed");
-        console.error("Error getting summary for interview ", recordId, ": ", error);
+        console.error(
+          "Error getting summary for interview ",
+          recordId,
+          ": ",
+          error
+        );
       });
   }, [recordId]);
 
@@ -252,16 +295,20 @@ const InterviewReportComponent = () => {
               onChange={(e) => {
                 console.log("selectedInterviewData", e.target.value);
                 setSelectedInterviewData(
-                  interviewsDataList.find((interview: any) => interview.uuid === e.target.value)
+                  interviewsDataList.find(
+                    (interview: any) => interview.uuid === e.target.value
+                  )
                 );
               }}
-              value={recordId || ""}>
+              value={recordId || ""}
+            >
               <option value="" disabled>
                 Select an interview
               </option>
               {interviewsDataList.map((interview: any) => (
                 <option key={interview.uuid} value={interview.uuid}>
-                  {new Date(interview.createdAt).toUTCString()} - {interview.uuid}
+                  {new Date(interview.createdAt).toUTCString()} -{" "}
+                  {interview.uuid}
                 </option>
               ))}
             </select>
@@ -314,7 +361,7 @@ const InterviewReportComponent = () => {
           value={meetingTranscript}
           readOnly={true}
           style={{ width: "100%", height: 200, color: "#fff" }}
-        />
+        />      
       </CollapsibleText>
 
       <CollapsibleText title="Follow-ups" status={followUpsStatus}>

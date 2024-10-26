@@ -26,7 +26,12 @@ const getStatusIcon = (status?: string) => {
       return null;
   }
 };
-const CollapsibleText: React.FC<CollapsibleTextProps> = ({ title, log, status, children }) => {
+const CollapsibleText: React.FC<CollapsibleTextProps> = ({
+  title,
+  log,
+  status,
+  children,
+}) => {
   const [isOpen, setIsOpen] = useState(import.meta.env.DEV ? true : false);
 
   return (
@@ -38,13 +43,15 @@ const CollapsibleText: React.FC<CollapsibleTextProps> = ({ title, log, status, c
         margin: 16,
         borderRadius: 6,
         border: "1px solid #d1d5da",
-      }}>
+      }}
+    >
       <div
         style={{
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
-        }}>
+        }}
+      >
         <div style={{ display: "flex", alignItems: "center" }}>
           {getStatusIcon(status)}
           <span style={{ marginLeft: 8, fontWeight: 600 }}>{title}</span>
@@ -59,8 +66,10 @@ const CollapsibleText: React.FC<CollapsibleTextProps> = ({ title, log, status, c
             display: "flex",
             alignItems: "center",
             fontSize: 14,
-          }}>
-          {isOpen ? "Hide logs" : "Show logs"} {isOpen ? <FaChevronUp /> : <FaChevronDown />}
+          }}
+        >
+          {isOpen ? "Hide logs" : "Show logs"}{" "}
+          {isOpen ? <FaChevronUp /> : <FaChevronDown />}
         </button>
       </div>
 
@@ -70,7 +79,8 @@ const CollapsibleText: React.FC<CollapsibleTextProps> = ({ title, log, status, c
             padding: "12px 0",
             borderTop: "1px solid #e1e4e8",
             marginTop: 12,
-          }}>
+          }}
+        >
           {children}
           {log && (
             <pre
@@ -79,7 +89,8 @@ const CollapsibleText: React.FC<CollapsibleTextProps> = ({ title, log, status, c
                 background: "#f6f8fa",
                 padding: 12,
                 borderRadius: 6,
-              }}>
+              }}
+            >
               {log}
             </pre>
           )}
