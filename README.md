@@ -39,9 +39,20 @@ The **Live Code Interviewer** is a tool designed for live technical interviews, 
    npm install
    ```
 
-3. Create a `.env` file with your SuperViz API key:
+3. Create a `.env` file with your keys `.en.example` has the model:
    ```env
-   VITE_SUPERVIZ_DEVELOPER_KEY=YOUR_SUPERVIZ_KEY
+   VITE_SUPERVIZ_DEVELOPER_KEY=
+   VITE_SUPERVIZ_PRODUCTION_KEY=
+   
+   VITE_API_SECRET_KEY_DEFAULT_NO_EXPIRATION_CLIENT_ID_DEVELOPMENT=
+   VITE_API_SECRET_KEY_DEFAULT_NO_EXPIRATION_SECRET_DEVELOPMENT=
+   
+   VITE_API_SECRET_KEY_DEFAULT_NO_EXPIRATION_CLIENT_ID_PRODUCTION=
+   VITE_API_SECRET_KEY_DEFAULT_NO_EXPIRATION_SECRET_PRODUCTION=
+   
+   VITE_SUPERVIZ_SECURITY_KEY=
+   
+   VITE_FIREBASE_API_KEY=
    ```
 
 4. Start the project:
@@ -49,7 +60,7 @@ The **Live Code Interviewer** is a tool designed for live technical interviews, 
    npm run dev
    ```
 
-5. Access the project in the browser: [http://localhost:3000](http://localhost:3000)
+5. Access the project in the browser: [http://localhost:5173](http://localhost:5173)
 
 ## Project Structure
 
