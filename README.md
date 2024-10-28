@@ -71,5 +71,6 @@ At the end of each interview, a final report is automatically generated, contain
 
 ## 👥 Collaborators
 
+- [antoniovini47](https://github.com/antoniovini47)
 - [jrmagalhaesz](https://github.com/jrmagalhaesz)
 - [gustabcc](https://github.com/gustabcc)
