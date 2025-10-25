@@ -3,11 +3,6 @@ import { Box, Button, useToast } from "@chakra-ui/react";
 import UserInput from "./components/UserInput";
 import VideoRoom from "./components/VideoRoom";
 import CodeEditor from "./components/CodeEditor";
-import { SuperVizRoomProvider } from "@superviz/react-sdk";
-
-const DEVELOPER_API_KEY = import.meta.env.DEV
-  ? import.meta.env.VITE_SUPERVIZ_DEVELOPER_KEY
-  : import.meta.env.VITE_SUPERVIZ_PRODUCTION_KEY;
 
 function App() {
   const [userID, setUserID] = useState<string | null>(null);
@@ -16,18 +11,19 @@ function App() {
 
   return (
     <Box minH="100vh" bg="#0f0a19" color="gray.500" px={6} py={0}>
+      {/* Show input for userID and roomID */}
       {!userID && <UserInput setUserID={setUserID} setRoomID={setRoomID} />}
+
+      {/* Show Video + CodeEditor once user and room are set */}
       {userID && roomID && (
-        <SuperVizRoomProvider
-          developerKey={DEVELOPER_API_KEY}
-          group={{ id: roomID, name: "Your Group Name" }}
-          participant={{ id: userID, name: userID }}
-          roomId={roomID}
-        >
+        <>
+          {/* Agora-powered video room */}
+          <VideoRoom channelName={roomID} />
           <CodeEditor roomId={roomID} />
-          <VideoRoom />
-        </SuperVizRoomProvider>
+        </>
       )}
+
+      {/* Buttons to copy links */}
       {roomID && userID && (
         <Box
           style={{ paddingBottom: 24 }}
@@ -43,11 +39,8 @@ function App() {
               fontSize: "1rem",
               borderRadius: "6px",
               transition: "background-color 0.2s ease-in-out",
-              _hover: {
-                bg: "rgba(248,248,255, 0.3)",
-              },
+              _hover: { bg: "rgba(248,248,255, 0.3)" },
             }}
-            style={{ marginRight: 24 }}
             onClick={() => {
               const roomURL = `${window.location.origin}/index.html?roomId=${roomID}`;
               navigator.clipboard.writeText(roomURL);
@@ -62,6 +55,7 @@ function App() {
           >
             Copy Room ID
           </Button>
+
           <Button
             sx={{
               color: "#ffffff",
@@ -69,17 +63,14 @@ function App() {
               fontSize: "1rem",
               borderRadius: "6px",
               transition: "background-color 0.2s ease-in-out",
-              _hover: {
-                bg: "rgba(248,248,255, 0.3)",
-              },
+              _hover: { bg: "rgba(248,248,255, 0.3)" },
             }}
             onClick={() => {
               const reportURL = `${window.location.origin}/interviewReport/index.html?roomId=${roomID}`;
               navigator.clipboard.writeText(reportURL);
               toast({
                 title: "Report Link Copied.",
-                description:
-                  "The report link has been copied to your clipboard.",
+                description: "The report link has been copied to your clipboard.",
                 status: "success",
                 duration: 3000,
                 isClosable: true,

@@ -7,20 +7,45 @@ import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
 import { getFirestore } from "firebase/firestore";
 
-// Initializing Firebase
+// Debug environment variables
+console.log("Firebase API Key from env:", import.meta.env.VITE_FIREBASE_API_KEY);
+
+// Firebase configuration
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-  authDomain: "live-code-interviewer-sv.firebaseapp.com",
-  projectId: "live-code-interviewer-sv",
-  storageBucket: "live-code-interviewer-sv.appspot.com",
-  messagingSenderId: "801834174909",
-  appId: "1:801834174909:web:33da1136e14a901f862ad4",
-  measurementId: "G-75Z1VG7Z60",
+  authDomain: "interview-app-7fba4.firebaseapp.com",
+  projectId: "interview-app-7fba4",
+  storageBucket: "interview-app-7fba4.firebasestorage.app",
+  messagingSenderId: "11394759670",
+  appId: "1:11394759670:web:be81eaa97a616fdb0925d7",
+  measurementId: "G-7ZFJKSCB1T"
 };
-const app = initializeApp(firebaseConfig);
-export const firestore = getFirestore();
-export const analytics = getAnalytics(app);
-console.warn("Firebase initialized");
+
+// Initialize Firebase only if API key is available
+let app;
+let firestore;
+let analytics;
+
+try {
+  if (!import.meta.env.VITE_FIREBASE_API_KEY) {
+    console.warn("Firebase API key is missing. Firebase features will be disabled.");
+  } else {
+    app = initializeApp(firebaseConfig);
+    firestore = getFirestore(app);
+    
+    // Only initialize analytics in production or if needed
+    if (import.meta.env.PROD) {
+      analytics = getAnalytics(app);
+    }
+    
+    console.log("Firebase initialized successfully");
+  }
+} catch (error) {
+  console.error("Firebase initialization error:", error);
+}
+
+// Export Firebase instances (or null if not initialized)
+export { app, firestore, analytics };
 
 const rootElement = document.getElementById("root");
 

@@ -1,95 +1,163 @@
 import { useRef, useState, useEffect } from "react";
-import { Box, HStack, Button, useToast } from "@chakra-ui/react";
+import { Box, HStack, Button, useToast, Alert, AlertIcon } from "@chakra-ui/react";
 import { Editor } from "@monaco-editor/react";
 import LanguageSelector from "./LanguageSelector";
+import { io, Socket } from 'socket.io-client';
 import { CODE_SNIPPETS } from "../constants";
 import Output from "./Output";
-import { YjsProvider, useYjsProvider } from "@superviz/react-sdk";
-import * as Y from "yjs";
-import { MonacoBinding } from "y-monaco";
 import * as monaco from "monaco-editor";
-import { firestore } from "../main";
-import { doc, setDoc } from "firebase/firestore";
 
 let savedCodeCode = 0;
-const ydoc = new Y.Doc();
 
 const CodeEditor = (props: { roomId: string }) => {
   const editorRef = useRef<monaco.editor.IStandaloneCodeEditor | null>(null);
   const [value, setValue] = useState<string>("//Code goes here");
   const [language, setLanguage] = useState("javascript");
-  const { provider } = useYjsProvider();
+  const [socket, setSocket] = useState<Socket | null>(null);
+  const [isConnected, setIsConnected] = useState(false);
+  const [collabError, setCollabError] = useState<string>("");
   const toast = useToast();
+
+  const SOCKET_URL = "http://localhost:3001";
+
+  // Initialize Socket.io connection
+  useEffect(() => {
+    const newSocket = io(SOCKET_URL);
+    setSocket(newSocket);
+
+    newSocket.on("connect", () => {
+      console.log("Connected to collaboration server");
+      setIsConnected(true);
+      newSocket.emit("join-room", props.roomId);
+      setCollabError("");
+    });
+
+    newSocket.on("disconnect", () => {
+      console.log("Disconnected from collaboration server");
+      setIsConnected(false);
+      setCollabError("Real-time collaboration disconnected");
+    });
+
+    newSocket.on("connect_error", (error) => {
+      console.error("Socket connection error:", error);
+      setCollabError("Failed to connect to collaboration server");
+    });
+
+    // Listen for code changes from other users
+    newSocket.on("code-change", (data) => {
+      if (data.sender !== newSocket.id && data.roomId === props.roomId) {
+        console.log("Received code change from:", data.sender);
+        setValue(data.content);
+        if (editorRef.current) {
+          // Save current cursor position and selection
+          const position = editorRef.current.getPosition();
+          const selection = editorRef.current.getSelection();
+          
+          editorRef.current.setValue(data.content);
+          
+          // Restore cursor position and selection
+          if (position) {
+            editorRef.current.setPosition(position);
+          }
+          if (selection) {
+            editorRef.current.setSelection(selection);
+          }
+        }
+      }
+    });
+
+    // Listen for language changes from other users
+    newSocket.on("language-change", (data) => {
+      if (data.sender !== newSocket.id && data.roomId === props.roomId) {
+        console.log("Received language change:", data.language);
+        setLanguage(data.language);
+        setValue(CODE_SNIPPETS[data.language] || "//Code goes here");
+      }
+    });
+
+    return () => {
+      newSocket.disconnect();
+    };
+  }, [props.roomId]);
 
   const onMount = (editor: monaco.editor.IStandaloneCodeEditor) => {
     editorRef.current = editor;
     editor.focus();
+    
+    // Listen for local changes and broadcast them
+    let timeoutId: NodeJS.Timeout;
+    editor.onDidChangeModelContent(() => {
+      const content = editor.getValue();
+      setValue(content);
+      
+      // Debounce the socket emission to avoid too many events
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        // Broadcast code change to other users
+        if (socket && socket.connected) {
+          socket.emit("code-change", {
+            content: content,
+            sender: socket.id,
+            roomId: props.roomId,
+            timestamp: Date.now()
+          });
+        }
+      }, 100); // 100ms debounce
+    });
   };
 
-  const onSelect = (language: any) => {
-    setLanguage(language);
+  const onSelect = (newLanguage: string) => {
+    setLanguage(newLanguage);
+    setValue(CODE_SNIPPETS[newLanguage] || "//Code goes here");
+    
+    // Broadcast language change to other users
+    if (socket && socket.connected) {
+      socket.emit("language-change", {
+        language: newLanguage,
+        sender: socket.id,
+        roomId: props.roomId,
+        timestamp: Date.now()
+      });
+    }
   };
-
-  useEffect(() => {
-    if (!provider || !editorRef.current) return;
-
-    const model = editorRef.current.getModel();
-    if (!model) return;
-
-    const binding = new MonacoBinding(
-      ydoc.getText("monaco"),
-      model,
-      new Set([editorRef.current]),
-      provider.awareness
-    );
-
-    return () => {
-      binding.destroy();
-    };
-  }, [provider]);
 
   async function saveCode() {
-    const docReference = doc(
-      firestore,
-      `codes/${props.roomId}/versions/${savedCodeCode++}`
-    );
-    const docData = { code: value };
-
-    try {
-      await setDoc(docReference, docData);
-      toast({
-        title: "Code saved.",
-        description: "Your code has been saved successfully.",
-        status: "success",
-        duration: 3000,
-        isClosable: true,
-      });
-    } catch (error) {
-      toast({
-        title: "Error saving code.",
-        description: "There was an error while saving your code.",
-        status: "error",
-        duration: 3000,
-        isClosable: true,
-      });
-      console.error("Error saving code:", error);
-    }
+    toast({
+      title: "Save Code",
+      description: "This feature will be available when Firebase is configured.",
+      status: "info",
+      duration: 3000,
+      isClosable: true,
+    });
   }
 
   return (
-    <YjsProvider doc={ydoc}>
-      <Box>
-        <HStack spacing={4} align="flex-start">
-          <Box w="50%">
-            <HStack justify="space-between" mb={4}>
-              <Box
-                display="flex"
-                flexDirection="row"
-                alignItems="center"
-                w="100%"
-                justifyContent="space-between"
-              >
-                <LanguageSelector language={language} onSelect={onSelect} />
+    <Box>
+      {collabError && (
+        <Alert status="warning" mb={4}>
+          <AlertIcon />
+          {collabError}
+        </Alert>
+      )}
+      
+      <HStack spacing={4} align="flex-start">
+        <Box w="50%">
+          <HStack justify="space-between" mb={4}>
+            <Box
+              display="flex"
+              flexDirection="row"
+              alignItems="center"
+              w="100%"
+              justifyContent="space-between"
+            >
+              <LanguageSelector language={language} onSelect={onSelect} />
+              <div className="flex items-center gap-2">
+                <div className={`w-2 h-2 rounded-full ${
+                  isConnected ? 'bg-green-500' : 'bg-red-500'
+                }`} />
+                <span className="text-sm text-gray-500">
+                  {isConnected ? 'Connected' : 'Disconnected'}
+                </span>
                 <Button
                   sx={{
                     color: "#ffffff",
@@ -106,23 +174,29 @@ const CodeEditor = (props: { roomId: string }) => {
                 >
                   Save Code
                 </Button>
-              </Box>
-            </HStack>
-            <Editor
-              options={{ minimap: { enabled: false } }}
-              height="70vh"
-              theme="vs-dark"
-              language={language}
-              defaultValue={CODE_SNIPPETS[language]}
-              onMount={onMount}
-              value={value}
-              onChange={(newValue: any) => setValue(newValue)}
-            />
-          </Box>
-          <Output editorRef={editorRef} language={language} />
-        </HStack>
-      </Box>
-    </YjsProvider>
+              </div>
+            </Box>
+          </HStack>
+          <Editor
+            options={{ 
+              minimap: { enabled: false },
+              fontSize: 14,
+              lineNumbers: "on",
+              scrollBeyondLastLine: false,
+              automaticLayout: true
+            }}
+            height="70vh"
+            theme="vs-dark"
+            language={language}
+            defaultValue={CODE_SNIPPETS[language]}
+            onMount={onMount}
+            value={value}
+            onChange={(newValue: any) => setValue(newValue || "")}
+          />
+        </Box>
+        <Output editorRef={editorRef} language={language} />
+      </HStack>
+    </Box>
   );
 };
 
