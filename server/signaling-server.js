@@ -6,34 +6,38 @@ import cors from 'cors';
 const app = express();
 
 // Enhanced CORS configuration for production
-const allowedOrigins = process.env.NODE_ENV === 'production' 
-  ? [
+const getCorsOrigins = () => {
+  if (process.env.NODE_ENV === 'production') {
+    return [
       'https://your-project-name.vercel.app', // Your Vercel frontend URL
-      'https://*.vercel.app', // All Vercel preview deployments
-    ]
-  : [
+      // Add more production URLs as needed
+    ];
+  } else {
+    return [
       'http://localhost:5173',
       'http://127.0.0.1:5173',
       'http://localhost:3000',
-      'http://192.168.*:*' // Allow local network access
     ];
+  }
+};
+
+const allowedOrigins = getCorsOrigins();
 
 app.use(cors({
   origin: function (origin, callback) {
     // Allow requests with no origin (like mobile apps or curl requests)
     if (!origin) return callback(null, true);
     
-    if (allowedOrigins.some(allowedOrigin => {
-      if (allowedOrigin.includes('*')) {
-        const regex = new RegExp(allowedOrigin.replace('*', '.*'));
-        return regex.test(origin);
-      }
-      return origin === allowedOrigin;
-    })) {
+    if (allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      console.log('Blocked by CORS:', origin);
-      callback(new Error('Not allowed by CORS'));
+      // For development, allow local network access
+      if (process.env.NODE_ENV !== 'production' && origin.startsWith('http://192.168.')) {
+        callback(null, true);
+      } else {
+        console.log('Blocked by CORS:', origin);
+        callback(new Error('Not allowed by CORS'));
+      }
     }
   },
   credentials: true
@@ -196,15 +200,22 @@ app.get('/', (req, res) => {
   });
 });
 
-// 404 handler
-app.use('*', (req, res) => {
-  res.status(404).json({ error: 'Endpoint not found' });
+// 404 handler - FIXED: Use proper express 404 handler
+app.use((req, res) => {
+  res.status(404).json({ 
+    error: 'Endpoint not found',
+    path: req.path,
+    method: req.method
+  });
 });
 
 // Error handling middleware
 app.use((error, req, res, next) => {
   console.error('Server error:', error);
-  res.status(500).json({ error: 'Internal server error' });
+  res.status(500).json({ 
+    error: 'Internal server error',
+    message: process.env.NODE_ENV === 'production' ? 'Something went wrong' : error.message
+  });
 });
 
 const PORT = process.env.PORT || 3001;
