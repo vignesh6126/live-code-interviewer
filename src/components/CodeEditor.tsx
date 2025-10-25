@@ -2,7 +2,7 @@ import { useRef, useState, useEffect } from "react";
 import { Box, HStack, Button, useToast, Alert, AlertIcon } from "@chakra-ui/react";
 import { Editor } from "@monaco-editor/react";
 import LanguageSelector from "./LanguageSelector";
-import { io, Socket } from 'socket.io-client';
+import { io } from 'socket.io-client';
 import { CODE_SNIPPETS } from "../constants";
 import Output from "./Output";
 import * as monaco from "monaco-editor";
@@ -13,12 +13,12 @@ const CodeEditor = (props: { roomId: string }) => {
   const editorRef = useRef<monaco.editor.IStandaloneCodeEditor | null>(null);
   const [value, setValue] = useState<string>("//Code goes here");
   const [language, setLanguage] = useState("javascript");
-  const [socket, setSocket] = useState<Socket | null>(null);
+  const [socket, setSocket] = useState<any>(null);
   const [isConnected, setIsConnected] = useState(false);
   const [collabError, setCollabError] = useState<string>("");
   const toast = useToast();
 
-  const SOCKET_URL = "http://localhost:3001";
+  const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || "http://localhost:3001";
 
   // Initialize Socket.io connection
   useEffect(() => {
@@ -78,7 +78,7 @@ const CodeEditor = (props: { roomId: string }) => {
     return () => {
       newSocket.disconnect();
     };
-  }, [props.roomId]);
+  }, [props.roomId, SOCKET_URL]);
 
   const onMount = (editor: monaco.editor.IStandaloneCodeEditor) => {
     editorRef.current = editor;
