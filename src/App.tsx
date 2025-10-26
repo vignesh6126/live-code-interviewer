@@ -138,8 +138,8 @@ function App() {
           <Box display="grid" gridTemplateColumns="1fr 400px" gap="6" mt="6">
             {/* Left Column - Video and Code Editor */}
             <Box display="flex" flexDirection="column" gap="6">
-              {/* Video Room */}
-              <VideoRoom roomId={roomID} />
+              {/* Video Room - PASS SOCKET PROP */}
+              <VideoRoom roomId={roomID} socket={socket} />
               
               {/* Code Editor */}
               <CodeEditor roomId={roomID} />
@@ -220,7 +220,7 @@ function App() {
               sx={{
                 color: "#ffffff",
                 bg: "rgba(255,255,255,0.1)",
-                fontSize: "1rem",
+                fontSize="1rem",
                 borderRadius: "6px",
                 transition: "background-color 0.2s ease-in-out",
                 _hover: { bg: "rgba(248,248,255, 0.3)" },
