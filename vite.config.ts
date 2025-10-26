@@ -34,5 +34,6 @@ export default defineConfig({
   },
   optimizeDeps: {
     include: ['socket.io-client'],
+    exclude: ['firebase'],
   },
 });
