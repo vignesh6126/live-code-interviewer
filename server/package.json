@@ -9,13 +9,18 @@
     "dev": "node signaling-server.js",
     "test": "echo \"No tests specified\" && exit 0"
   },
-  "keywords": ["webrtc", "socket.io", "real-time", "collaboration"],
+  "keywords": [
+    "webrtc",
+    "socket.io",
+    "real-time",
+    "collaboration"
+  ],
   "author": "Your Name",
   "license": "MIT",
   "dependencies": {
-    "express": "^4.18.2",
-    "socket.io": "^4.7.2",
-    "cors": "^2.8.5"
+    "cors": "^2.8.5",
+    "express": "^4.21.2",
+    "socket.io": "^4.7.2"
   },
   "engines": {
     "node": ">=18.0.0"

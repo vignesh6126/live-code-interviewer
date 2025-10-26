@@ -4,7 +4,7 @@ import { io, Socket } from "socket.io-client";
 import UserInput from "./components/UserInput";
 import VideoRoom from "./components/VideoRoom";
 import CodeEditor from "./components/CodeEditor";
-import Chat from "./Chat";
+import Chat from "./components/Chat";
 
 function App() {
   const [userID, setUserID] = useState<string | null>(null);
