@@ -13,26 +13,42 @@ function App() {
   const [isConnected, setIsConnected] = useState(false);
   const toast = useToast();
 
-  const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || "http://localhost:3001";
+  const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || "https://live-code-interviewer.onrender.com";
 
   // Initialize Socket.io connection when user and room are set
   useEffect(() => {
-    if (userID && roomID) {
-      console.log("Initializing Socket.io connection...");
+    if (userID && roomID && roomID.trim() !== '') {
+      console.log("Initializing Socket.io connection for room:", roomID);
       const newSocket = io(SOCKET_URL, {
         transports: ['websocket', 'polling'],
         timeout: 10000,
+        reconnection: true,
+        reconnectionAttempts: 5,
+        reconnectionDelay: 1000,
       });
 
       newSocket.on("connect", () => {
-        console.log("Connected to server with ID:", newSocket.id);
+        console.log("Connected to server with ID:", newSocket.id, "for room:", roomID);
         setIsConnected(true);
-        // Join the room immediately after connection
-        newSocket.emit("join-room", roomID);
+        
+        // Join the room with validation
+        if (roomID && roomID.trim() !== '') {
+          newSocket.emit("join-room", roomID);
+          console.log(`Joined room: ${roomID}`);
+        } else {
+          console.error("Invalid room ID:", roomID);
+          toast({
+            title: "Invalid Room",
+            description: "Please enter a valid room ID",
+            status: "error",
+            duration: 3000,
+            isClosable: true,
+          });
+        }
       });
 
-      newSocket.on("disconnect", () => {
-        console.log("Disconnected from server");
+      newSocket.on("disconnect", (reason) => {
+        console.log("Disconnected from server:", reason);
         setIsConnected(false);
       });
 
@@ -48,8 +64,41 @@ function App() {
         });
       });
 
+      // Add reconnection events
+      newSocket.on("reconnect", (attempt) => {
+        console.log("Reconnected after", attempt, "attempts");
+        setIsConnected(true);
+        if (roomID) {
+          newSocket.emit("join-room", roomID);
+        }
+      });
+
+      newSocket.on("reconnect_error", (error) => {
+        console.error("Reconnection error:", error);
+      });
+
+      newSocket.on("reconnect_failed", () => {
+        console.error("Failed to reconnect");
+        toast({
+          title: "Connection Lost",
+          description: "Unable to reconnect to server",
+          status: "error",
+          duration: 5000,
+          isClosable: true,
+        });
+      });
+
       newSocket.on("existing-users", (users) => {
         console.log("Existing users in room:", users);
+        if (users.length > 0) {
+          toast({
+            title: "Users in Room",
+            description: `Found ${users.length} user(s) in the room`,
+            status: "info",
+            duration: 3000,
+            isClosable: true,
+          });
+        }
       });
 
       newSocket.on("user-joined", (userId) => {
@@ -74,6 +123,17 @@ function App() {
         });
       });
 
+      newSocket.on("join-error", (data) => {
+        console.log("Join room error:", data.message);
+        toast({
+          title: "Join Room Error",
+          description: data.message,
+          status: "error",
+          duration: 5000,
+          isClosable: true,
+        });
+      });
+
       setSocket(newSocket);
 
       // Cleanup on unmount or when roomID/userID changes
@@ -87,10 +147,30 @@ function App() {
   }, [userID, roomID, SOCKET_URL, toast]);
 
   const handleSetUserID = (id: string) => {
+    if (id.trim() === '') {
+      toast({
+        title: "Invalid Name",
+        description: "Please enter your name",
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
+      return;
+    }
     setUserID(id);
   };
 
   const handleSetRoomID = (id: string) => {
+    if (id.trim() === '') {
+      toast({
+        title: "Invalid Room ID",
+        description: "Please enter a room ID",
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
+      return;
+    }
     setRoomID(id);
   };
 
@@ -131,8 +211,28 @@ function App() {
               bg={isConnected ? "white" : "white"}
               animation={isConnected ? "pulse 2s infinite" : "none"}
             />
-            {isConnected ? "Connected" : "Disconnected"}
+            {isConnected ? `Connected - Room: ${roomID}` : 'Disconnected'}
           </Box>
+
+          {/* Debug Info - Remove in production */}
+          {process.env.NODE_ENV === 'development' && (
+            <Box 
+              position="fixed" 
+              bottom="4" 
+              left="4" 
+              bg="blackAlpha.800" 
+              color="white" 
+              p="2" 
+              borderRadius="md" 
+              fontSize="xs"
+              zIndex="1000"
+            >
+              <div>User: {userID}</div>
+              <div>Room: {roomID}</div>
+              <div>Socket: {socket?.id || 'Disconnected'}</div>
+              <div>Status: {socket?.connected ? 'Connected' : 'Disconnected'}</div>
+            </Box>
+          )}
 
           {/* Main Content Grid */}
           <Box display="grid" gridTemplateColumns="1fr 400px" gap="6" mt="6">
@@ -142,7 +242,7 @@ function App() {
               <VideoRoom roomId={roomID} socket={socket} />
               
               {/* Code Editor */}
-              <CodeEditor roomId={roomID} />
+              <CodeEditor roomId={roomID} socket={socket} />
             </Box>
 
             {/* Right Column - Chat */}
@@ -220,7 +320,7 @@ function App() {
               sx={{
                 color: "#ffffff",
                 bg: "rgba(255,255,255,0.1)",
-                fontSize="1rem",
+                fontSize: "1rem",
                 borderRadius: "6px",
                 transition: "background-color 0.2s ease-in-out",
                 _hover: { bg: "rgba(248,248,255, 0.3)" },

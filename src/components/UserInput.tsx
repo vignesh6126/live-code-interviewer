@@ -2,15 +2,24 @@ import { useState, useEffect } from "react";
 import { Input, Button } from "@chakra-ui/react";
 import styles from "../styles/buttons.module.css";
 
-const UserInput = ({ setUserID, setRoomID }: any) => {
+interface UserInputProps {
+  setUserID: (id: string) => void;
+  setRoomID: (id: string) => void;
+}
+
+const UserInput = ({ setUserID, setRoomID }: UserInputProps) => {
   const [inputValue, setInputValue] = useState("");
   const [roomID, setInputRoomID] = useState<string>("");
 
   // Get the roomID from the URL on the first render
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    setInputRoomID(params.get("roomId")?.toString() || "");
-  }, []);
+    const urlRoomId = params.get("roomId");
+    if (urlRoomId) {
+      setInputRoomID(urlRoomId);
+      setRoomID(urlRoomId); // Set roomID immediately if present in URL
+    }
+  }, [setRoomID]);
 
   const generateSimpleId = () => {
     const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
@@ -29,6 +38,16 @@ const UserInput = ({ setUserID, setRoomID }: any) => {
   };
 
   const handleSubmit = () => {
+    if (!inputValue.trim()) {
+      alert("Please enter your name");
+      return;
+    }
+    
+    if (!roomID.trim()) {
+      alert("Please enter or generate a room ID");
+      return;
+    }
+    
     setUserID(inputValue);
     setRoomID(roomID);
   };
@@ -36,36 +55,54 @@ const UserInput = ({ setUserID, setRoomID }: any) => {
   return (
     <div className={styles.groups}>
       <div className={styles.groupInputs}>
-        {/* TODO Gustavo: transformar em título, dar destaque na página, mas após logar, ficar de cantinho (ou sumir e aparecer outro componente semelkhante).*/}
         <h2 style={{ color: "white", fontSize: 24, marginBottom: 24 }}>Live Code Interviewer</h2>
+        
         <Input
           className={styles.defaultInputs}
           type="text"
           width="auto"
-          placeholder="Name"
+          placeholder="Your Name"
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
+          onKeyPress={(e) => {
+            if (e.key === 'Enter') handleSubmit();
+          }}
         />
+        
         <Input
           type="text"
           className={styles.defaultInputs}
           width="auto"
-          placeholder="Unique Room ID"
+          placeholder="Room ID"
           value={roomID}
-          onChange={(e) => setInputRoomID(e.target.value)}
+          onChange={(e) => {
+            const newRoomId = e.target.value;
+            setInputRoomID(newRoomId);
+            setRoomID(newRoomId); // Update roomID in parent immediately
+          }}
+          onKeyPress={(e) => {
+            if (e.key === 'Enter') handleSubmit();
+          }}
         />
       </div>
+      
       <div className={styles.groupButtons}>
-        <Button colorScheme="gray" className={styles.defaultButtons} onClick={handleSubmit}>
-          Start
+        <Button colorScheme="blue" className={styles.defaultButtons} onClick={handleSubmit}>
+          Join Room
         </Button>
-        <Button colorScheme="gray" className={styles.defaultButtons} onClick={handleGenerateRoomID}>
+        
+        <Button colorScheme="green" className={styles.defaultButtons} onClick={handleGenerateRoomID}>
           Generate Room ID
         </Button>
+        
         <Button
           className={styles.defaultButtons}
           onClick={() => {
-            window.location.href = `/interviewReport/index.html?roomId=${roomID}`;
+            if (roomID) {
+              window.location.href = `/interviewReport/index.html?roomId=${roomID}`;
+            } else {
+              alert("Please enter a room ID first");
+            }
           }}>
           Interview Reports
         </Button>
