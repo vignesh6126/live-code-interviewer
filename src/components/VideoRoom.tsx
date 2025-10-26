@@ -16,7 +16,7 @@ const VideoRoom = ({ roomId }: VideoRoomProps) => {
   const localVideoRef = useRef(null);
   const remoteVideoRef = useRef(null);
 
-  const SOCKET_URL = "http://localhost:3001";
+  const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || "http://localhost:3001";
 
   useEffect(() => {
     const newSocket = io(SOCKET_URL);
