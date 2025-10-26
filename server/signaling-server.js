@@ -6,44 +6,41 @@ import cors from 'cors';
 const app = express();
 
 // Enhanced CORS configuration for production
-const getCorsOrigins = () => {
-  if (process.env.NODE_ENV === 'production') {
-    return [
-      'https://your-project-name.vercel.app', // Your Vercel frontend URL
-      // Add more production URLs as needed
-    ];
-  } else {
-    return [
+const allowedOrigins = process.env.NODE_ENV === 'production' 
+  ? [
+      'https://live-code-interviewer.vercel.app',
+      'https://live-code-interviewer-git-*.vercel.app', // Preview deployments
+      'https://*.vercel.app' // All Vercel deployments
+    ]
+  : [
       'http://localhost:5173',
       'http://127.0.0.1:5173',
       'http://localhost:3000',
     ];
-  }
-};
-
-const allowedOrigins = getCorsOrigins();
 
 app.use(cors({
   origin: function (origin, callback) {
     // Allow requests with no origin (like mobile apps or curl requests)
     if (!origin) return callback(null, true);
     
-    if (allowedOrigins.includes(origin)) {
+    // Check if origin is in allowed origins
+    if (allowedOrigins.some(allowed => {
+      if (allowed.includes('*')) {
+        const regex = new RegExp(allowed.replace('*', '.*'));
+        return regex.test(origin);
+      }
+      return origin === allowed;
+    })) {
       callback(null, true);
     } else {
-      // For development, allow local network access
-      if (process.env.NODE_ENV !== 'production' && origin.startsWith('http://192.168.')) {
-        callback(null, true);
-      } else {
-        console.log('Blocked by CORS:', origin);
-        callback(new Error('Not allowed by CORS'));
-      }
+      console.log('Blocked by CORS:', origin);
+      callback(new Error('Not allowed by CORS'));
     }
   },
   credentials: true
 }));
 
-// Add express.json middleware for potential future API routes
+// Add express.json middleware
 app.use(express.json());
 
 const server = http.createServer(app);
@@ -184,7 +181,8 @@ app.get('/health', (req, res) => {
       userCount: users.size
     })),
     uptime: process.uptime(),
-    memory: process.memoryUsage()
+    memory: process.memoryUsage(),
+    environment: process.env.NODE_ENV || 'development'
   });
 });
 
@@ -193,6 +191,7 @@ app.get('/', (req, res) => {
   res.json({ 
     message: 'PS24 Signaling Server is running',
     version: '1.0.0',
+    environment: process.env.NODE_ENV || 'development',
     endpoints: {
       health: '/health',
       websocket: '/socket.io/'
@@ -200,7 +199,7 @@ app.get('/', (req, res) => {
   });
 });
 
-// 404 handler - FIXED: Use proper express 404 handler
+// 404 handler
 app.use((req, res) => {
   res.status(404).json({ 
     error: 'Endpoint not found',
@@ -242,3 +241,5 @@ process.on('SIGINT', () => {
     console.log('Process terminated');
   });
 });
+
+export default app;
