@@ -52,9 +52,9 @@ const CodeEditor = (props: { roomId: string }) => {
           // Save current cursor position and selection
           const position = editorRef.current.getPosition();
           const selection = editorRef.current.getSelection();
-          
+
           editorRef.current.setValue(data.content);
-          
+
           // Restore cursor position and selection
           if (position) {
             editorRef.current.setPosition(position);
@@ -83,14 +83,14 @@ const CodeEditor = (props: { roomId: string }) => {
   const onMount = (editor: monaco.editor.IStandaloneCodeEditor) => {
     editorRef.current = editor;
     editor.focus();
-    
+
     // Listen for local changes and broadcast them
     let timeoutId: NodeJS.Timeout;
     editor.onDidChangeModelContent(() => {
       const content = editor.getValue();
       setValue(content);
-      
-      // Debounce the socket emission to avoid too many events
+
+      // Reduced debounce time for better real-time experience
       clearTimeout(timeoutId);
       timeoutId = setTimeout(() => {
         // Broadcast code change to other users
@@ -102,14 +102,14 @@ const CodeEditor = (props: { roomId: string }) => {
             timestamp: Date.now()
           });
         }
-      }, 100); // 100ms debounce
+      }, 50); // Reduced from 100ms to 50ms for better responsiveness
     });
   };
 
   const onSelect = (newLanguage: string) => {
     setLanguage(newLanguage);
     setValue(CODE_SNIPPETS[newLanguage] || "//Code goes here");
-    
+
     // Broadcast language change to other users
     if (socket && socket.connected) {
       socket.emit("language-change", {
@@ -139,7 +139,7 @@ const CodeEditor = (props: { roomId: string }) => {
           {collabError}
         </Alert>
       )}
-      
+
       <HStack spacing={4} align="flex-start">
         <Box w="50%">
           <HStack justify="space-between" mb={4}>
@@ -152,9 +152,8 @@ const CodeEditor = (props: { roomId: string }) => {
             >
               <LanguageSelector language={language} onSelect={onSelect} />
               <div className="flex items-center gap-2">
-                <div className={`w-2 h-2 rounded-full ${
-                  isConnected ? 'bg-green-500' : 'bg-red-500'
-                }`} />
+                <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-500' : 'bg-red-500'
+                  }`} />
                 <span className="text-sm text-gray-500">
                   {isConnected ? 'Connected' : 'Disconnected'}
                 </span>
@@ -178,7 +177,7 @@ const CodeEditor = (props: { roomId: string }) => {
             </Box>
           </HStack>
           <Editor
-            options={{ 
+            options={{
               minimap: { enabled: false },
               fontSize: 14,
               lineNumbers: "on",

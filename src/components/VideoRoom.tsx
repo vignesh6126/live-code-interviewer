@@ -1,20 +1,20 @@
 import { useEffect, useRef, useState } from "react";
-import { io } from "socket.io-client";
+import { io, Socket } from "socket.io-client";
 
 interface VideoRoomProps {
   roomId: string;
 }
 
 const VideoRoom = ({ roomId }: VideoRoomProps) => {
-  const [socket, setSocket] = useState(null);
-  const [localStream, setLocalStream] = useState(null);
-  const [remoteStream, setRemoteStream] = useState(null);
-  const [peerConnection, setPeerConnection] = useState(null);
+  const [socket, setSocket] = useState<Socket | null>(null);
+  const [localStream, setLocalStream] = useState<MediaStream | null>(null);
+  const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
+  const [peerConnection, setPeerConnection] = useState<RTCPeerConnection | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const [hasRemoteUser, setHasRemoteUser] = useState(false);
 
-  const localVideoRef = useRef(null);
-  const remoteVideoRef = useRef(null);
+  const localVideoRef = useRef<HTMLVideoElement>(null);
+  const remoteVideoRef = useRef<HTMLVideoElement>(null);
 
   const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || "http://localhost:3001";
 
@@ -28,10 +28,13 @@ const VideoRoom = ({ roomId }: VideoRoomProps) => {
       newSocket.emit("join-room", roomId);
     });
 
-    newSocket.on("user-joined", (userId) => {
+    newSocket.on("user-joined", (userId: string) => {
       console.log("User joined:", userId);
       setHasRemoteUser(true);
-      createOffer();
+      // Only create offer if we're the second user to join
+      if (localStream) {
+        createOffer();
+      }
     });
 
     newSocket.on("user-left", () => {
@@ -44,17 +47,17 @@ const VideoRoom = ({ roomId }: VideoRoomProps) => {
       }
     });
 
-    newSocket.on("offer", async (data) => {
+    newSocket.on("offer", async (data: any) => {
       console.log("Received offer");
-      await handleOffer(data.offer);
+      await handleOffer(data.offer, data.senderId);
     });
 
-    newSocket.on("answer", async (data) => {
+    newSocket.on("answer", async (data: any) => {
       console.log("Received answer");
       await handleAnswer(data.answer);
     });
 
-    newSocket.on("ice-candidate", async (data) => {
+    newSocket.on("ice-candidate", async (data: any) => {
       console.log("Received ICE candidate");
       await handleIceCandidate(data.candidate);
     });
@@ -90,6 +93,11 @@ const VideoRoom = ({ roomId }: VideoRoomProps) => {
         localVideoRef.current.srcObject = stream;
       }
 
+      // If we already have a socket connection and are in a room, create offer
+      if (socket?.connected && hasRemoteUser) {
+        createOffer();
+      }
+
     } catch (error) {
       console.error("Error accessing media devices:", error);
     }
@@ -116,7 +124,7 @@ const VideoRoom = ({ roomId }: VideoRoomProps) => {
     // Handle remote stream
     pc.ontrack = (event) => {
       console.log("Received remote stream");
-      const remoteStream = event.streams[0];
+      const [remoteStream] = event.streams;
       setRemoteStream(remoteStream);
       if (remoteVideoRef.current) {
         remoteVideoRef.current.srcObject = remoteStream;
@@ -125,10 +133,11 @@ const VideoRoom = ({ roomId }: VideoRoomProps) => {
 
     // Handle ICE candidates
     pc.onicecandidate = (event) => {
-      if (event.candidate) {
+      if (event.candidate && socket) {
         socket.emit("ice-candidate", {
           candidate: event.candidate,
-          target: roomId
+          roomId: roomId,
+          senderId: socket.id
         });
       }
     };
@@ -141,22 +150,25 @@ const VideoRoom = ({ roomId }: VideoRoomProps) => {
   };
 
   const createOffer = async () => {
-    const pc = createPeerConnection();
+    const pc = peerConnection || createPeerConnection();
     
     try {
       const offer = await pc.createOffer();
       await pc.setLocalDescription(offer);
       
-      socket.emit("offer", {
-        offer: offer,
-        target: roomId
-      });
+      if (socket) {
+        socket.emit("offer", {
+          offer: offer,
+          roomId: roomId,
+          senderId: socket.id
+        });
+      }
     } catch (error) {
       console.error("Error creating offer:", error);
     }
   };
 
-  const handleOffer = async (offer) => {
+  const handleOffer = async (offer: RTCSessionDescriptionInit, senderId: string) => {
     const pc = createPeerConnection();
     
     try {
@@ -165,16 +177,20 @@ const VideoRoom = ({ roomId }: VideoRoomProps) => {
       const answer = await pc.createAnswer();
       await pc.setLocalDescription(answer);
       
-      socket.emit("answer", {
-        answer: answer,
-        target: roomId
-      });
+      if (socket) {
+        socket.emit("answer", {
+          answer: answer,
+          roomId: roomId,
+          senderId: socket.id,
+          targetId: senderId
+        });
+      }
     } catch (error) {
       console.error("Error handling offer:", error);
     }
   };
 
-  const handleAnswer = async (answer) => {
+  const handleAnswer = async (answer: RTCSessionDescriptionInit) => {
     if (peerConnection) {
       try {
         await peerConnection.setRemoteDescription(answer);
@@ -184,10 +200,10 @@ const VideoRoom = ({ roomId }: VideoRoomProps) => {
     }
   };
 
-  const handleIceCandidate = async (candidate) => {
+  const handleIceCandidate = async (candidate: RTCIceCandidateInit) => {
     if (peerConnection) {
       try {
-        await peerConnection.addIceCandidate(candidate);
+        await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
       } catch (error) {
         console.error("Error adding ICE candidate:", error);
       }
